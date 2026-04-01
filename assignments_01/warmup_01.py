@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import statistics as stats
 
 data = {
     "name":   ["Alice", "Bob", "Carol", "David", "Eve"],
@@ -139,3 +140,56 @@ axes[1].set_ylabel("Scores")
 plt.tight_layout()
 plt.show()
 # %%
+# --- Descriptive Stats ---
+# Descriptive Stats Q1 - Given the list below, use NumPy to compute and print the mean, median, variance, and standard deviation. Label each printed value.
+data = [12, 15, 14, 10, 18, 22, 13, 16, 14, 15]
+print("Mean:", np.mean(data))
+print("Median:", np.median(data))
+print("Variance:", np.var(data))
+print("Standard Deviation:", np.std(data))  
+
+# Descriptive Stats Q2 - Generate 500 random values from a normal distribution with mean 65 and standard deviation 10 (use np.random.normal(65, 10, 500)). Plot a histogram with 20 bins. Add a title "Distribution of Scores" and label both axes.
+data_normal = np.random.normal(65, 10, 500)
+plt.figure(figsize=(8, 5))
+plt.hist(data_normal, bins = 20, color="green", edgecolor="black")
+plt.title("Distribution of Scores")
+plt.xlabel("Score Range")
+plt.ylabel("Frequency")
+plt.show()
+
+# Descriptive Stats Q3 - Create a boxplot comparing the two groups below. Label each box ("Group A" and "Group B") and add a title "Score Comparison".
+group_a = [55, 60, 63, 70, 68, 62, 58, 65]
+group_b = [75, 80, 78, 90, 85, 79, 82, 88]
+plt.boxplot([group_a, group_b], labels=["Group A", "Group B"])
+plt.title("Score Comparison")
+plt.ylabel("Scores")
+plt.show()
+
+# Descriptive Stats Q4 - Create side-by-side boxplots comparing the two distributions. Label each boxplot appropriately ("Normal" and "Exponential") and add a title "Distribution Comparison".
+normal_data = np.random.normal(50, 5, 200)
+skewed_data = np.random.exponential(10, 200)
+
+plt.figure(figsize=(8,5))
+
+plt.boxplot([normal_data, skewed_data], labels=["Normal", "Exponential"])
+plt.title("Distribution Comparison")
+plt.ylabel("Values")
+plt.show()
+
+# The exponential distribution is more skewed (right-skewed).
+# The median is a better measure of central tendency for the exponential data because it is less affected by extreme values.
+# The normal distribution is symmetric, so the mean is an appropriate measure of central tendency.
+
+# Descriptive Stats Q5 -  Print the mean, median, and mode. Why are the median and mean so different for data2?
+data1 = [10, 12, 12, 16, 18]
+data2 = [10, 12, 12, 16, 150]
+
+print("Data1 Mean:", np.mean(data1))
+print("Data1 Median:", np.median(data1))
+print("Data1 Mode:", stats.mode(data1))
+
+print("Data2 Mean:", np.mean(data2))
+print("Data2 Median:", np.median(data2))
+print("Data2 Mode:", stats.mode(data2))
+
+# The mean and median are very different for data2 because of the extreme value (150), which is an outlier. The mean is heavily influenced by this large value and gets pulled upward, while the median remains more stable since it depends only on the middle value of the sorted data.
