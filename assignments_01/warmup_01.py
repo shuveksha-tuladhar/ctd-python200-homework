@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 data = {
     "name":   ["Alice", "Bob", "Carol", "David", "Eve"],
@@ -91,3 +92,50 @@ std_val = np.std(random_arr)
 print(f"Mean: {mean_val}")
 print(f"Standard Deviation: {std_val}")
 
+# %%
+# --- Matplotlib ---
+# Matplotlib Q1 - Plot the following data as a line plot. Add a title "Squares", x-axis label "x", and y-axis label "y".
+x = [0, 1, 2, 3, 4, 5]
+y = [0, 1, 4, 9, 16, 25]
+plt.plot(x, y)
+plt.title("Squares")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.show()
+
+# Matplotlib Q2 - Create a bar plot for the following subject scores. Add a title "Subject Scores" and label both axes.
+subjects = ["Math", "Science", "English", "History"]
+scores   = [88, 92, 75, 83]
+plt.bar(subjects, scores, color="blue")
+plt.title("Subject Scores")
+plt.xlabel("Subjects")
+plt.ylabel("Scores")
+plt.show()
+
+# Matplotlib Q3 - Plot the two datasets below as a scatter plot on the same figure. Use different colors for each, add a legend, and label both axes.
+x1, y1 = [1, 2, 3, 4, 5], [2, 4, 5, 4, 5]
+x2, y2 = [1, 2, 3, 4, 5], [5, 4, 3, 2, 1]
+plt.scatter(x1, y1, color="red", label="Dataset 1")
+plt.scatter(x2, y2, color="green", label="Dataset 2")
+plt.legend()
+plt.title("Scatter Plot")
+plt.xlabel("X values")
+plt.ylabel("Y values")
+plt.show()
+
+# Matplotlib Q4 - Use plt.subplots() to create a figure with 1 row and 2 subplots side by side. In the left subplot, plot x vs y from Q1 as a line. In the right subplot, plot the subjects and scores from Q2 as a bar plot. Add a title to each subplot and call plt.tight_layout() before showing.
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+axes[0].plot(x, y)
+axes[0].set_title("Line Plot (x vs y)")
+axes[0].set_xlabel("x")
+axes[0].set_ylabel("y")
+
+axes[1].bar(subjects, scores)
+axes[1].set_title("Scores by Subject")
+axes[1].set_xlabel("Subjects")
+axes[1].set_ylabel("Scores")
+
+plt.tight_layout()
+plt.show()
+# %%
