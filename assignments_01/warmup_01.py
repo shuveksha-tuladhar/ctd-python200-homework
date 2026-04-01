@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statistics as py_stats
 from scipy import stats
+from scipy.stats import pearsonr
+import seaborn as sns
 
 data = {
     "name":   ["Alice", "Bob", "Carol", "David", "Eve"],
@@ -235,3 +237,48 @@ print(f"One-tailed p-value: {p_val:.6f}")
 # Hypothesis Q6 - Write a plain-language conclusion for the result of Q1 (do not just say "reject the null hypothesis"). Format it as a print() statement. Your conclusion should mention the direction of the difference and whether it is likely due to chance.
 print("Students in group B scored higher on average than students in group A, and this difference is statistically significant, meaning it is unlikely to be due to random chance.")
 # %%
+# --- Correlation ---
+# Correlation Q1 - Compute the Pearson correlation between x and y below using np.corrcoef(). Print the full correlation matrix, then print just the correlation coefficient (the value at position [0, 1]).
+x = [1, 2, 3, 4, 5]
+y = [2, 4, 6, 8, 10]
+
+corr_matrix = np.corrcoef(x, y)
+corr_value = corr_matrix[0, 1]
+
+print("Correlation Matrix:")
+print(corr_matrix)
+print("\nCorrelation Coefficient:", corr_value)
+#
+
+# Correlation Q2 - Use pearsonr() from scipy.stats to compute the correlation between x and y below. Print both the correlation coefficient and the p-value.
+x = [1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
+y = [10, 9,  7,  8,  6,  5,  3,  4,  2,  1]
+r, p = pearsonr(x, y)
+print(f"Correlation: {r:.2f}")
+print(f"p-value: {p:.4f}")
+
+# Correlation Q3 - Create the following DataFrame and use df.corr() to compute the correlation matrix. Print the result.
+people = {
+    "height": [160, 165, 170, 175, 180],
+    "weight": [55,  60,  65,  72,  80],
+    "age":    [25,  30,  22,  35,  28]
+}
+df = pd.DataFrame(people)
+corr = df.corr()
+print("\nCorrelation Matrix:", corr)
+
+# Correlation Q4 - Create a scatter plot of x and y below, which have a negative relationship. Add a title "Negative Correlation" and label both axes.
+x = [10, 20, 30, 40, 50]
+y = [90, 75, 60, 45, 30]
+
+plt.scatter(x, y, color='purple')
+plt.title("Negative Correlation")
+plt.xlabel("X values")
+plt.ylabel("Y values")
+plt.show()
+
+# Correlation Q5 - Using the correlation matrix from Q3, create a heatmap with sns.heatmap(). Pass annot=True so the correlation values appear in each cell, and add a title "Correlation Heatmap".
+sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f")
+plt.figure(figsize=(6, 4))
+plt.title("Correlation Heatmap")
+plt.show()
