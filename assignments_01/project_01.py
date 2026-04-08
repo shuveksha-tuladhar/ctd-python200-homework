@@ -4,6 +4,7 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy import stats
 
 # Task 1: Load Multiple Years of Data
 
@@ -133,11 +134,116 @@ def create_visualizations(df):
     plt.close()
     logger.info(f"Heatmap saved to: {heatmap_path}")
     
+# Task 4: Hypothesis Testing
+@task
+def run_hypothesis_tests(df):
+    logger = get_run_logger()
+    alpha = 0.05
+
+    # Test 1: 2019 vs 2020 (pandemic effect)
+    scores_2019 = df.loc[df["year"] == 2019, "Happiness score"].dropna()
+    scores_2020 = df.loc[df["year"] == 2020, "Happiness score"].dropna()
+
+    t_stat_2019_2020, p_value_2019_2020 = stats.ttest_ind(
+        scores_2019, scores_2020, equal_var=False
+    )
+
+    mean_2019 = scores_2019.mean()
+    mean_2020 = scores_2020.mean()
+
+    logger.info("Hypothesis Test 1: 2019 vs 2020 Happiness Scores")
+    logger.info(f"Mean 2019: {mean_2019:.3f}")
+    logger.info(f"Mean 2020: {mean_2020:.3f}")
+    logger.info(f"t-statistic: {t_stat_2019_2020:.4f}")
+    logger.info(f"p-value: {p_value_2019_2020:.6f}")
+
+    if p_value_2019_2020 < alpha:
+        if mean_2020 > mean_2019:
+            interpretation_2019_2020 = (
+                "At alpha=0.05, the difference between 2019 and 2020 is statistically significant. "
+                "In this dataset, average happiness was higher in 2020 than in 2019, suggesting a real "
+                "shift rather than random variation."
+            )
+        else:
+            interpretation_2019_2020 = (
+                "At alpha=0.05, the difference between 2019 and 2020 is statistically significant. "
+                "In this dataset, average happiness was lower in 2020 than in 2019, suggesting a real "
+                "shift rather than random variation."
+            )
+    else:
+        interpretation_2019_2020 = (
+            "At alpha=0.05, the 2019 and 2020 averages are not statistically different. "
+            "Any observed gap in this dataset could reasonably be due to chance."
+        )
+
+    logger.info(interpretation_2019_2020)
+
+    # Test 2: North America and ANZ vs Sub-Saharan Africa
+    region_a_name = "North America and ANZ"
+    region_b_name = "Sub-Saharan Africa"
+
+    region_a_scores = df.loc[
+        df["Regional indicator"] == region_a_name, "Happiness score"
+    ].dropna()
+    region_b_scores = df.loc[
+        df["Regional indicator"] == region_b_name, "Happiness score"
+    ].dropna()
+
+    t_stat_regions, p_value_regions = stats.ttest_ind(
+        region_a_scores, region_b_scores, equal_var=False
+    )
+
+    mean_region_a = region_a_scores.mean()
+    mean_region_b = region_b_scores.mean()
+
+    logger.info(
+        f"Hypothesis Test 2: {region_a_name} vs {region_b_name} Happiness Scores"
+    )
+    logger.info(f"Mean {region_a_name}: {mean_region_a:.3f}")
+    logger.info(f"Mean {region_b_name}: {mean_region_b:.3f}")
+    logger.info(f"t-statistic: {t_stat_regions:.4f}")
+    logger.info(f"p-value: {p_value_regions:.6f}")
+
+    if p_value_regions < alpha:
+        higher_region = region_a_name if mean_region_a > mean_region_b else region_b_name
+        interpretation_regions = (
+            f"At alpha=0.05, the regional difference is statistically significant. "
+            f"{higher_region} has a higher average happiness score in this dataset, and that gap is unlikely "
+            "to be due to random sampling variation alone."
+        )
+    else:
+        interpretation_regions = (
+            "At alpha=0.05, these regional averages are not statistically different in this dataset. "
+            "The observed gap could be due to chance."
+        )
+
+    logger.info(interpretation_regions)
+
+    return {
+        "test_2019_2020": {
+            "mean_2019": mean_2019,
+            "mean_2020": mean_2020,
+            "t_statistic": t_stat_2019_2020,
+            "p_value": p_value_2019_2020,
+            "interpretation": interpretation_2019_2020,
+        },
+        "test_regions": {
+            "region_a": region_a_name,
+            "region_b": region_b_name,
+            "mean_region_a": mean_region_a,
+            "mean_region_b": mean_region_b,
+            "t_statistic": t_stat_regions,
+            "p_value": p_value_regions,
+            "interpretation": interpretation_regions,
+        },
+    }
+
 @flow
 def happiness_pipeline():
     df = load_and_merge_data()
     compute_descriptive_stats(df)
     create_visualizations(df)
+    run_hypothesis_tests(df)
     
 if __name__ == "__main__":
     happiness_pipeline()
