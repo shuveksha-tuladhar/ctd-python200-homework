@@ -231,8 +231,8 @@ print(f"t-statistic: {t_stat:.3f}")
 print(f"p-value: {p_val:.6f}")
 
 # Hypothesis Q5 - Re-run the test from Q1 as a one-tailed test to check whether group_a scores are less than group_b scores. Print the resulting p-value. Use the alternative parameter.
-stats.ttest_ind(group_a, group_b, alternative="less")
-print(f"One-tailed p-value: {p_val:.6f}")
+one_tailed_stat, one_tailed_p = stats.ttest_ind(group_a, group_b, alternative="less")
+print(f"One-tailed p-value: {one_tailed_p:.6f}")
 
 # Hypothesis Q6 - Write a plain-language conclusion for the result of Q1 (do not just say "reject the null hypothesis"). Format it as a print() statement. Your conclusion should mention the direction of the difference and whether it is likely due to chance.
 print("Students in group B scored higher on average than students in group A, and this difference is statistically significant, meaning it is unlikely to be due to random chance.")
