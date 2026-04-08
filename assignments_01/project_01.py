@@ -308,13 +308,65 @@ def run_correlation_tests(df):
         "results": correlation_results,
     }
 
+
+# Task 6: Summary Report
+@task
+def log_summary_report(df, descriptive_stats, hypothesis_results, correlation_results):
+    logger = get_run_logger()
+
+    country_col = "Country name" if "Country name" in df.columns else "Country"
+    total_countries = df[country_col].nunique() if country_col in df.columns else 0
+    total_years = df["year"].nunique() if "year" in df.columns else 0
+
+    logger.info(
+        f"Summary: merged dataset includes {total_countries} countries across {total_years} years."
+    )
+
+    regional_mean = descriptive_stats["regional_mean"].sort_values(ascending=False)
+    top_3_regions = regional_mean.head(3)
+    bottom_3_regions = regional_mean.tail(3)
+
+    top_3_text = ", ".join([f"{region} ({score:.3f})" for region, score in top_3_regions.items()])
+    bottom_3_text = ", ".join(
+        [f"{region} ({score:.3f})" for region, score in bottom_3_regions.items()]
+    )
+
+    logger.info(f"Summary: top 3 regions by mean happiness score: {top_3_text}")
+    logger.info(f"Summary: bottom 3 regions by mean happiness score: {bottom_3_text}")
+
+    pre_post_2020_interpretation = hypothesis_results["test_2019_2020"]["interpretation"]
+    logger.info(f"Summary: pre/post-2020 t-test result: {pre_post_2020_interpretation}")
+
+    bonferroni_significant = {
+        variable: result
+        for variable, result in correlation_results["results"].items()
+        if result["significant_bonferroni"]
+    }
+
+    if bonferroni_significant:
+        strongest_variable, strongest_result = max(
+            bonferroni_significant.items(),
+            key=lambda item: abs(item[1]["correlation_coefficient"]),
+        )
+        logger.info(
+            "Summary: strongest Bonferroni-significant correlation with happiness score is "
+            f"{strongest_variable} (r={strongest_result['correlation_coefficient']:.4f}, "
+            f"p={strongest_result['p_value']:.6g})."
+        )
+    else:
+        logger.info(
+            "Summary: no variable remained significantly correlated with happiness score after "
+            "Bonferroni correction."
+        )
+
 @flow
 def happiness_pipeline():
     df = load_and_merge_data()
-    compute_descriptive_stats(df)
+    descriptive_stats = compute_descriptive_stats(df)
     create_visualizations(df)
-    run_hypothesis_tests(df)
-    run_correlation_tests(df)
+    hypothesis_results = run_hypothesis_tests(df)
+    correlation_results = run_correlation_tests(df)
+    log_summary_report(df, descriptive_stats, hypothesis_results, correlation_results)
     
 if __name__ == "__main__":
     happiness_pipeline()
