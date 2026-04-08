@@ -317,4 +317,3 @@ result = data_pipeline(arr)
 for key, value in result.items():
     print(f"{key}: {value}")
     
-# Pipelines Q2 -
