@@ -238,12 +238,83 @@ def run_hypothesis_tests(df):
         },
     }
 
+
+# Task 5: Correlation and Multiple Comparisons
+@task
+def run_correlation_tests(df):
+    logger = get_run_logger()
+    alpha = 0.05
+    target_col = "Happiness score"
+
+    numeric_cols = df.select_dtypes(include="number").columns.tolist()
+    explanatory_cols = [col for col in numeric_cols if col != target_col]
+
+    number_of_tests = len(explanatory_cols)
+    adjusted_alpha = alpha / number_of_tests
+
+    logger.info("Task 5: Pearson Correlation Tests vs Happiness score")
+    logger.info(f"Number of correlation tests: {number_of_tests}")
+    logger.info(f"Original alpha: {alpha:.2f}")
+    logger.info(f"Bonferroni adjusted alpha: {adjusted_alpha:.6f}")
+
+    significant_alpha_0_05 = []
+    significant_bonferroni = []
+    correlation_results = {}
+
+    for col in explanatory_cols:
+        valid_df = df[[col, target_col]].dropna()
+
+        if len(valid_df) < 3:
+            logger.info(
+                f"{col}: skipped (not enough non-missing paired observations)."
+            )
+            continue
+
+        corr_coef, p_value = stats.pearsonr(valid_df[col], valid_df[target_col])
+        is_sig_alpha = p_value < alpha
+        is_sig_bonf = p_value < adjusted_alpha
+
+        if is_sig_alpha:
+            significant_alpha_0_05.append(col)
+        if is_sig_bonf:
+            significant_bonferroni.append(col)
+
+        logger.info(
+            f"{col}: r={corr_coef:.4f}, p-value={p_value:.6g}, "
+            f"significant@0.05={is_sig_alpha}, significant@bonferroni={is_sig_bonf}"
+        )
+
+        correlation_results[col] = {
+            "correlation_coefficient": corr_coef,
+            "p_value": p_value,
+            "significant_alpha_0_05": is_sig_alpha,
+            "significant_bonferroni": is_sig_bonf,
+        }
+
+    logger.info(
+        "Significant at alpha=0.05: "
+        + (", ".join(significant_alpha_0_05) if significant_alpha_0_05 else "None")
+    )
+    logger.info(
+        "Significant after Bonferroni correction: "
+        + (", ".join(significant_bonferroni) if significant_bonferroni else "None")
+    )
+
+    return {
+        "number_of_tests": number_of_tests,
+        "adjusted_alpha": adjusted_alpha,
+        "significant_alpha_0_05": significant_alpha_0_05,
+        "significant_bonferroni": significant_bonferroni,
+        "results": correlation_results,
+    }
+
 @flow
 def happiness_pipeline():
     df = load_and_merge_data()
     compute_descriptive_stats(df)
     create_visualizations(df)
     run_hypothesis_tests(df)
+    run_correlation_tests(df)
     
 if __name__ == "__main__":
     happiness_pipeline()
