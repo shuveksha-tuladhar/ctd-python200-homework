@@ -1,10 +1,11 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from sklearn.cluster import KMeans
+from sklearn.datasets import make_blobs
+import matplotlib.pyplot as plt
 
 # --- scikit-learn API--- 
 # scikit-learn Q1 : Create a LinearRegression model, fit it to this data, and then predict the salary for someone with 4 years of experience and someone with 8 years. Print the slope (model.coef_[0]), the intercept (model.intercept_), and the two predictions. Label each printed value.
-import numpy as np
-from sklearn.linear_model import LinearRegression
 
 years  = np.array([1, 2, 3, 5, 7, 10]).reshape(-1, 1)
 salary = np.array([45000, 50000, 60000, 75000, 90000, 120000])
@@ -28,3 +29,27 @@ new_x = x.reshape(-1, 1)
 print("New shape:", new_x.shape)
 
 # scikit-learn expects X to be 2D because it treats the data as (samples, features). Even if there is only one feature, it still needs a column format so it knows how many data points (rows) and how many features (columns) there are.
+
+# scikit-learn Q3 : Create a KMeans model with n_clusters=3 and random_state=42, fit it to X_clusters, and predict a cluster label for each point. Print the cluster centers (kmeans.cluster_centers_) and how many points fell into each cluster using np.bincount(labels). Then create a scatter plot coloring each point by its cluster label, plot the cluster centers as black X's, add a title and axis labels.
+
+X_clusters, _ = make_blobs(n_samples=120, centers=3, cluster_std=0.8, random_state=7)
+
+kmeans = KMeans(n_clusters=3, random_state=42)
+kmeans.fit(X_clusters)
+labels = kmeans.predict(X_clusters)
+centers = kmeans.cluster_centers_
+print("Cluster Centers:\n", centers)
+
+cluster_counts = np.bincount(labels)
+print("\nNumber of points in each cluster:", cluster_counts)
+
+plt.figure(figsize=(6, 5))
+plt.scatter(X_clusters[:, 0], X_clusters[:, 1], c=labels)
+plt.scatter(centers[:, 0], centers[:, 1], marker='x', s=200)
+
+plt.title("K-Means Clusters")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+
+plt.savefig("outputs/kmeans_clusters.png")
+plt.show()
