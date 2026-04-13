@@ -19,3 +19,12 @@ print("Intercept:", model.intercept_)
 print("Predicted salary for 4 years:", salary_predicted[0])
 print("Predicted salary for 8 years:", salary_predicted[1])
  
+# scikit-learn Q2 : Print its shape. Use .reshape() to convert it to a 2D array and print the new shape. Add a comment explaining, in your own words, why scikit-learn needs X to be 2D.
+
+x = np.array([10, 20, 30, 40, 50])
+print("Original shape:", x.shape)
+
+new_x = x.reshape(-1, 1)
+print("New shape:", new_x.shape)
+
+# scikit-learn expects X to be 2D because it treats the data as (samples, features). Even if there is only one feature, it still needs a column format so it knows how many data points (rows) and how many features (columns) there are.
