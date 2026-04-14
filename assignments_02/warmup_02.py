@@ -126,3 +126,24 @@ print("age coefficient:    ", model_full.coef_[0])
 print("smoker coefficient: ", model_full.coef_[1])
 
 # The smoker coefficient represents how much extra cost is added if a person is a smoker.
+
+# Linear Regression Q5 : Using the two-feature model from Linear Regression Question 4, create this plot for the test set. Add a diagonal reference line, a title "Predicted vs Actual", labeled axes.
+
+y_pred_full = model_full.predict(Xf_test)
+
+plt.figure(figsize=(6, 5))
+plt.scatter(y_pred_full, yf_test)
+
+min_val = min(yf_test.min(), y_pred_full.min())
+max_val = max(yf_test.max(), y_pred_full.max())
+plt.plot([min_val, max_val], [min_val, max_val])
+
+plt.title("Predicted vs Actual")
+plt.xlabel("Predicted Cost")
+plt.ylabel("Actual Cost")
+
+plt.savefig("outputs/predicted_vs_actual.png")
+plt.show()
+
+# Points above the diagonal mean the actual cost is higher than predicted (model underestimates).
+# Points below the diagonal mean the predicted cost is higher than actual (model overestimates).
