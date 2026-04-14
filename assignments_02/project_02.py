@@ -47,4 +47,43 @@ plt.show()
 
 plt.scatter(df_filtered["absences"], df_filtered["G3"])
 plt.title("After Filtering")
-plt.show()                                            
+plt.show()
+
+# --- Task 3: Exploratory Data Analysis ---
+numeric_cols = df_filtered.select_dtypes(include=["int64", "float64"])
+corr_with_g3 = numeric_cols.corr()["G3"].sort_values()
+print("Correlation with G3 (sorted):\n")
+print(corr_with_g3)
+
+# The strongest relationship with G3 is G2 (and also G1), which makes sense because earlier grades are strong predictors of the final grade.
+# The strongest negative relationships are failures and absences. This shows that past academic performance is the most important predictor, while behavioral factors have weaker effects.
+
+# Visualization 1: G2 vs G3
+plt.figure(figsize=(6, 5))
+plt.scatter(df_filtered["G2"], df_filtered["G3"])
+plt.title("G2 vs Final Grade (G3)")
+plt.xlabel("G2 (Second Period Grade)")
+plt.ylabel("G3 (Final Grade)")
+plt.savefig("outputs/g2_vs_g3.png")
+plt.show()
+# There is a very strong linear relationship between G2 and G3. Points cluster along an upward line, meaning students who do well earlier tend to do well on the final. G2 is a very strong predictor.
+
+# Visualization 2: Absences vs G3
+plt.figure(figsize=(6, 5))
+plt.scatter(df_filtered["absences"], df_filtered["G3"])
+plt.title("Absences vs Final Grade (G3)")
+plt.xlabel("Absences")
+plt.ylabel("Final Grade (G3)")
+plt.savefig("outputs/absences_vs_g3.png")
+plt.show()
+# There is a slight negative relationship between absences and G3. Students with more absences tend to have somewhat lower grades, but the relationship is noisy. This suggests attendance matters, but it is not as strong a predictor as prior grades (G1, G2).
+
+# Visualization 3: Failures vs G3
+plt.figure(figsize=(6, 5))
+plt.scatter(df_filtered["failures"], df_filtered["G3"])
+plt.title("Failures vs Final Grade (G3)")
+plt.xlabel("Number of Past Failures")
+plt.ylabel("Final Grade (G3)")
+plt.savefig("outputs/failures_vs_g3.png")
+plt.show()
+# There is a negative relationship between failures and G3. Students with more past failures tend to have lower final grades. High-performing students almost always have few or no past failures.
