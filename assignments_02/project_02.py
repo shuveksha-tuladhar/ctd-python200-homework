@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 
 # --- Task 1: Load and Explore --- 
 df = pd.read_csv("student_performance_math.csv", sep=";")
@@ -221,3 +222,27 @@ plt.close()
 
 # Surprising result:
 # The strong negative effect of schoolsup is surprising at first glance, but it reflects selection bias — support is targeted at weaker students, making it appear negatively correlated with performance.
+
+# --- Neglected Feature: The Power of G1 ---
+
+feature_cols_g1 = feature_cols + ["G1"]
+
+X = df_filtered[feature_cols_g1].values
+y = df_filtered["G3"].values
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+model_g1 = LinearRegression()
+model_g1.fit(X_train, y_train)
+
+train_r2 = model_g1.score(X_train, y_train)
+test_r2 = model_g1.score(X_test, y_test)
+
+print("Train R²:", train_r2)
+print("Test R²:", test_r2)
+
+# The large jump in R² does NOT mean that G1 causes G3. It means G1 is highly correlated with G3 and acts as a strong proxy for student ability and performance up to that point in time. This is a case of predictive power, not causality.
+# This model is very useful for predicting final outcomes once G1 is known, but it is less useful for early intervention because G1 is essentially a "midpoint outcome" that already reflects student performance patterns.
+# If educators want to intervene BEFORE G1 is available, they would need to rely on earlier signals such as attendance, study habits, prior failures, demographic/context variables, and possibly behavioral indicators. The key challenge is building a model that predicts risk without leaking future performance information.
