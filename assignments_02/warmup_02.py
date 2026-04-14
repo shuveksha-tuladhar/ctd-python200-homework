@@ -89,3 +89,19 @@ print("X_train shape:", X_train.shape)
 print("X_test shape: ", X_test.shape)
 print("y_train shape:", y_train.shape)
 print("y_test shape: ", y_test.shape)
+
+# Linear Regression Q3 : Fit a LinearRegression model to your training data from Question 2. Print the slope and intercept. Then predict on the test set.
+model = LinearRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+rmse = np.sqrt(np.mean((y_pred - y_test) ** 2))
+r2 = model.score(X_test, y_test)
+
+print("Slope:", model.coef_[0])
+print("Intercept:", model.intercept_)
+
+print("RMSE:", rmse)
+print("R²:", r2)
+
+# The slope represents how much medical cost increases for each additional year of age.
