@@ -115,3 +115,74 @@ print("R^2:", r2)
 # The slope is negative, meaning each additional past failure lowers the predicted final grade. Since grades are on a 0–20 scale, the slope tells us how many grade points are lost per failure.
 # The RMSE shows the typical prediction error in grade points. If RMSE is around 2–4, that means predictions are off by a few points on average, which is fairly large relative to the 0–20 grading scale.
 # The R^2 is relatively low, which makes sense because we are only using one weak/moderate predictor (failures). This model is much worse than models that would include G1 or G2, which had much stronger correlations.
+
+# --- Task 5: Build the Full Model ---
+feature_cols = ["failures", "Medu", "Fedu", "studytime", "higher", "schoolsup",
+                "internet", "sex", "freetime", "activities", "traveltime"]
+X = df_filtered[feature_cols].values
+y = df_filtered["G3"].values
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+train_r2 = model.score(X_train, y_train)
+test_r2 = model.score(X_test, y_test)
+rmse = np.sqrt(np.mean((y_pred - y_test) ** 2))
+
+print("Train R^2:", train_r2)
+print("Test R^2:", test_r2)
+print("RMSE:", rmse)
+
+# The test R^2 here should be noticeably higher than the baseline model using only failures, showing that adding more features improves predictive performance.
+
+print("\nFeature Coefficients:")
+for name, coef in zip(feature_cols, model.coef_):
+    print(f"{name:12s}: {coef:+.3f}")
+    
+# Coefficient Analysis 
+
+# Sorted roughly by absolute impact (largest to smallest):
+# schoolsup   : -2.062   <-- strongest effect
+# failures    : -1.145
+# internet    : +0.834
+# higher      : +0.610
+# sex         : +0.453
+# studytime   : +0.448
+# Fedu        : +0.186
+# traveltime  : -0.112
+# Medu        : +0.083
+# freetime    : -0.042
+# activities  : -0.009
+
+# Interpretations
+
+# 1. schoolsup (-2.062) is surprisingly NEGATIVE and very large.
+#    Students receiving school support tend to have LOWER final grades. This is likely NOT causal — it's selection bias. Students who are already struggling are the ones who get extra support, so "schoolsup" is acting as a proxy for "struggling student."
+
+# 2. internet (+0.834) is positive and relatively strong.
+#    Access to internet likely helps with studying/resources, so this makes intuitive sense.
+
+# 3. higher (+0.610) is positive.
+#    Students who want to pursue higher education tend to perform better. This aligns well with expectations (motivation effect).
+
+# 4. sex (+0.453) is moderately positive.
+#    Since sex was encoded (likely M=1, F=0), this suggests one group performs higher.This could reflect dataset-specific patterns rather than a general rule.
+
+# 5. activities (-0.009) is essentially zero (no effect).
+#    Participation in activities doesn't meaningfully impact grades here.
+
+# 6. freetime (-0.042) is slightly negative.
+#    More free time might slightly reduce study time, but effect is very small.
+
+# The model generalizes well (train and test R² are close), but overall performance is weak, explaining only ~15% of grade variation. Predictions are off by about ±3 points on average, which is fairly large on a 0–20 scale. 
+# Adding features helped slightly over the baseline, but the model is still limited due to missing stronger predictors like G1 and G2.
+
+# For a production model, it is advisable to retain features that show meaningful predictive power and clear real-world interpretation, such as failures, studytime, higher education aspirations, and parental education levels (Medu, Fedu).
+# Features like freetime and activities contribute little to model performance and may introduce noise, while variables such as internet access and sex should be carefully evaluated due to their weak impact and potential ethical considerations.
+# Adding multiple features improves performance, but many features contribute only small amounts. A simpler model with the strongest predictors may be more robust and interpretable.
