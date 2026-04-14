@@ -1,7 +1,9 @@
+import os
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 from sklearn.datasets import make_blobs
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 # --- scikit-learn API--- 
@@ -53,3 +55,25 @@ plt.ylabel("Feature 2")
 
 plt.savefig("outputs/kmeans_clusters.png")
 plt.show()
+
+# --- Linear Regression --- 
+
+np.random.seed(42)
+num_patients = 100
+age    = np.random.randint(20, 65, num_patients).astype(float)
+smoker = np.random.randint(0, 2, num_patients).astype(float)
+cost   = 200 * age + 15000 * smoker + np.random.normal(0, 3000, num_patients)
+
+# Linear Regression Q1 : Create a scatter plot of age on the x-axis and cost on the y-axis. Color the points by smoker status by passing c=smoker and cmap="coolwarm" to plt.scatter(). Add a title "Medical Cost vs Age", label both axes.
+plt.figure(figsize=(6, 5))
+plt.scatter(age, cost, c=smoker, cmap="coolwarm")
+plt.title("Medical Cost vs Age")
+plt.xlabel("Age")
+plt.ylabel("Medical Cost")
+plt.savefig("outputs/cost_vs_age.png")
+plt.show()
+
+# The scatter plot shows a clear upward trend: medical cost increases with age. There are two distinct groups visible—one lower band (non-smokers) and one higher band (smokers).
+# The smoker group is consistently shifted upward, suggesting that being a smoker significantly increases medical costs (by roughly a fixed amount).
+# This indicates that the smoker variable has a strong impact on cost and is an important feature.
+
