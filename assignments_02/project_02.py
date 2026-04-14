@@ -186,3 +186,38 @@ for name, coef in zip(feature_cols, model.coef_):
 # For a production model, it is advisable to retain features that show meaningful predictive power and clear real-world interpretation, such as failures, studytime, higher education aspirations, and parental education levels (Medu, Fedu).
 # Features like freetime and activities contribute little to model performance and may introduce noise, while variables such as internet access and sex should be carefully evaluated due to their weak impact and potential ethical considerations.
 # Adding multiple features improves performance, but many features contribute only small amounts. A simpler model with the strongest predictors may be more robust and interpretable.
+
+# --- Task 6: Evaluate and Summarize ---
+
+y_pred = model.predict(X_test)
+
+plt.figure()
+plt.scatter(y_pred, y_test)
+
+min_val = min(min(y_pred), min(y_test))
+max_val = max(max(y_pred), max(y_test))
+plt.plot([min_val, max_val], [min_val, max_val])  # y = x line
+
+plt.title("Predicted vs Actual (Full Model)")
+plt.xlabel("Predicted G3")
+plt.ylabel("Actual G3")
+plt.savefig("outputs/predicted_vs_actual.png")
+plt.close()
+
+# Plot interpretation:
+# The errors appear roughly scattered around the diagonal, indicating no extreme bias, but the spread is fairly wide. The model tends to struggle slightly more at the higher end of grades, where predictions are often pulled toward the middle (underestimating top scores).
+# Points above the diagonal mean the model underpredicted (actual > predicted), while points below the diagonal mean the model overpredicted (actual < predicted).
+
+# Dataset size:
+# After filtering out G3=0 rows, the dataset contains approximately 395 samples. The test set is 20% of this, so about 0.2 * 395 = 79 samples.
+
+# Model performance:
+# RMSE ≈ 2.86 means predictions are typically off by about 3 grade points on a 0–20 scale, which is a noticeable error.
+# R² ≈ 0.15 means the model explains only about 15% of the variation in final grades, so most of the factors affecting performance are not captured.
+
+# Most important features:
+# Largest positive coefficient: internet (+0.834). Students with internet access tend to have higher grades.
+# Largest negative coefficient: schoolsup (-2.062). Students receiving school support tend to have lower grades, likely because support is given to struggling students (not causal).
+
+# Surprising result:
+# The strong negative effect of schoolsup is surprising at first glance, but it reflects selection bias — support is targeted at weaker students, making it appear negatively correlated with performance.
