@@ -1,6 +1,9 @@
 # --- Part 2: Mini-Project -- Predicting Student Math Performance --- 
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 
 # --- Task 1: Load and Explore --- 
 df = pd.read_csv("student_performance_math.csv", sep=";")
@@ -87,3 +90,28 @@ plt.ylabel("Final Grade (G3)")
 plt.savefig("outputs/failures_vs_g3.png")
 plt.show()
 # There is a negative relationship between failures and G3. Students with more past failures tend to have lower final grades. High-performing students almost always have few or no past failures.
+
+# --- Task 4: Baseline Model ---
+
+X = df_filtered[["failures"]]   
+y = df_filtered["G3"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+rmse = np.sqrt(np.mean((y_pred - y_test) ** 2))
+r2 = model.score(X_test, y_test)
+
+print("slope (failures):", model.coef_[0])
+print("intercept:", model.intercept_)
+print("RMSE:", rmse)
+print("R^2:", r2)
+
+# The slope is negative, meaning each additional past failure lowers the predicted final grade. Since grades are on a 0–20 scale, the slope tells us how many grade points are lost per failure.
+# The RMSE shows the typical prediction error in grade points. If RMSE is around 2–4, that means predictions are off by a few points on average, which is fairly large relative to the 0–20 grading scale.
+# The R^2 is relatively low, which makes sense because we are only using one weak/moderate predictor (failures). This model is much worse than models that would include G1 or G2, which had much stronger correlations.
