@@ -77,3 +77,15 @@ plt.show()
 # The smoker group is consistently shifted upward, suggesting that being a smoker significantly increases medical costs (by roughly a fixed amount).
 # This indicates that the smoker variable has a strong impact on cost and is an important feature.
 
+# Linear Regression Q2 : Split the data into training and test sets using age as the only feature, an 80/20 split, and random_state=42. Reshape age to a 2D array before using it as X. Print the shapes of all four arrays.
+X = age.reshape(-1, 1)
+y = cost
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+print("X_train shape:", X_train.shape)
+print("X_test shape: ", X_test.shape)
+print("y_train shape:", y_train.shape)
+print("y_test shape: ", y_test.shape)
