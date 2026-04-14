@@ -105,3 +105,24 @@ print("RMSE:", rmse)
 print("R²:", r2)
 
 # The slope represents how much medical cost increases for each additional year of age.
+
+# Linear Regression Q4 : Add smoker as a second feature and fit a new model. Split, fit, and print the test R². Compare it to the R² from Question 3 -- does adding the smoker flag help? Print both coefficients:
+
+X_full = np.column_stack([age, smoker])
+
+Xf_train, Xf_test, yf_train, yf_test = train_test_split(
+    X_full, cost, test_size=0.2, random_state=42
+)
+
+model_full = LinearRegression()
+model_full.fit(Xf_train, yf_train)
+
+r2_full = model_full.score(Xf_test, yf_test)
+
+print("R² (age only):", r2)
+print("R² (age + smoker):", r2_full)
+
+print("age coefficient:    ", model_full.coef_[0])
+print("smoker coefficient: ", model_full.coef_[1])
+
+# The smoker coefficient represents how much extra cost is added if a person is a smoker.
