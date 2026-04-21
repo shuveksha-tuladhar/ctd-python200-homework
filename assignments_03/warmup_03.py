@@ -92,3 +92,16 @@ plt.savefig("outputs/knn_confusion_matrix.png")
 plt.close()
 
 # The model most often confuses versicolor and virginica (if any confusion occurs), since these two classes have more overlapping feature values compared to setosa.
+
+# --- The sklearn API: Decision Trees --- 
+# Decision Trees Q1 - Create a DecisionTreeClassifier(max_depth=3, random_state=42), fit it on the unscaled training data, and predict on the test set. Print the accuracy score and classification report.
+
+dt = DecisionTreeClassifier(max_depth=3, random_state=42)
+dt.fit(X_train, y_train)
+y_pred_dt = dt.predict(X_test)
+print("Decision Tree Accuracy:", accuracy_score(y_test, y_pred_dt))
+print("\nClassification Report:\n", classification_report(y_test, y_pred_dt))
+
+# The Decision Tree accuracy is typically similar to or slightly lower than KNN on this dataset, though it can vary depending on the split.
+# Since Decision Trees split based on feature thresholds rather than distance, scaling the data generally does not affect their performance.
+
