@@ -105,3 +105,18 @@ print("\nClassification Report:\n", classification_report(y_test, y_pred_dt))
 # The Decision Tree accuracy is typically similar to or slightly lower than KNN on this dataset, though it can vary depending on the split.
 # Since Decision Trees split based on feature thresholds rather than distance, scaling the data generally does not affect their performance.
 
+# --- Logistic Regression and Regularization --- 
+# Logistic Regression Q1 - Train three logistic regression models on the scaled Iris data, identical in every way except for the C parameter: C=0.01, C=1.0, and C=100. Use max_iter=1000 and solver='liblinear' for all three. For each model, print the C value and the total size of all coefficients using np.abs(model.coef_).sum().
+
+C_values = [0.01, 1.0, 100]
+
+for C in C_values:
+    model = LogisticRegression(C=C, max_iter=1000, solver='lbfgs')
+    model.fit(X_train_scaled, y_train)
+    
+    coef_magnitude = np.abs(model.coef_).sum()
+    
+    print(f"C={C}, Total |coefficients|={coef_magnitude:.4f}")
+    
+# As C increases, the total magnitude of the coefficients also increases. This is because a larger C means weaker regularization, allowing the model to fit the training data more closely with larger weights. 
+# Conversely, a smaller C applies stronger regularization, shrinking coefficients toward zero to prevent overfitting.
