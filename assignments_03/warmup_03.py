@@ -81,3 +81,14 @@ for k in k_values:
 # Smaller values like k=1 tend to memorize the training data, which can lead to overfitting and poor generalization to new data. 
 # As k increases, the model becomes smoother and less sensitive to noise, improving generalization up to a point. However, if k becomes too large, the model may become overly simplistic and miss important patterns (underfitting).
 # In practice, moderate values of k (often around 5–11) provide a good balance between these effects.
+
+# --- Classifier Evaluation --- 
+# Classifier Evaluation Q1 - Using your predictions from KNN Question 1, create a confusion matrix and display it with ConfusionMatrixDisplay, passing display_labels=iris.target_names.
+
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=iris.target_names)
+disp.plot()
+plt.savefig("outputs/knn_confusion_matrix.png")
+plt.close()
+
+# The model most often confuses versicolor and virginica (if any confusion occurs), since these two classes have more overlapping feature values compared to setosa.
