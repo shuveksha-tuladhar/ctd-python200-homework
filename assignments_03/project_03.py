@@ -7,6 +7,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, ConfusionMatrixDisplay
+
 # Mini-Project -- Spam or Ham? A Classifier Shootout
 
 # Task 1: Load and Explore
@@ -171,4 +177,94 @@ X_test_pca = pca.transform(X_test_scaled)[:, :n]
 # PCA was applied after scaling, since it is sensitive to feature magnitude. It was fit only on the training data to avoid data leakage.
 # We selected the number of components that explain at least 90% of the variance, then transformed both training and test sets. We keep both the scaled data and PCA-reduced data for use in different models.
 
+# Task 3: A Classifier Comparison
 
+# KNN (unscaled)
+knn_unscaled = KNeighborsClassifier(n_neighbors=5)
+knn_unscaled.fit(X_train, y_train)
+y_pred = knn_unscaled.predict(X_test)
+
+print("\nKNN (unscaled)")
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+# KNN (scaled)
+knn_scaled = KNeighborsClassifier(n_neighbors=5)
+knn_scaled.fit(X_train_scaled, y_train)
+y_pred_scaled = knn_scaled.predict(X_test_scaled)
+
+print("\nKNN (scaled)")
+print("Accuracy:", accuracy_score(y_test, y_pred_scaled))
+print(classification_report(y_test, y_pred_scaled))
+
+# KNN (PCA)
+knn_pca = KNeighborsClassifier(n_neighbors=5)
+knn_pca.fit(X_train_pca, y_train)
+y_pred_pca = knn_pca.predict(X_test_pca)
+
+print("\nKNN (PCA)")
+print("Accuracy:", accuracy_score(y_test, y_pred_pca))
+print(classification_report(y_test, y_pred_pca))
+
+# Decision Tree (depth tuning)
+depths = [3, 5, 10, None]
+
+for d in depths:
+    tree = DecisionTreeClassifier(max_depth=d, random_state=42)
+    tree.fit(X_train, y_train)
+
+    train_acc = accuracy_score(y_train, tree.predict(X_train))
+    test_acc = accuracy_score(y_test, tree.predict(X_test))
+
+    print(f"\nDecision Tree (max_depth={d})")
+    print("Train Accuracy:", train_acc)
+    print("Test Accuracy:", test_acc)
+
+tree_final = DecisionTreeClassifier(max_depth=5, random_state=42)
+tree_final.fit(X_train, y_train)
+y_pred_tree = tree_final.predict(X_test)
+
+print("\nDecision Tree (final)")
+print("Accuracy:", accuracy_score(y_test, y_pred_tree))
+print(classification_report(y_test, y_pred_tree))
+
+# Random Forest
+rf = RandomForestClassifier(random_state=42)
+rf.fit(X_train, y_train)
+y_pred_rf = rf.predict(X_test)
+
+print("\nRandom Forest")
+print("Accuracy:", accuracy_score(y_test, y_pred_rf))
+print(classification_report(y_test, y_pred_rf))
+
+# Logistic Regression (scaled)
+log_scaled = LogisticRegression(C=1.0, max_iter=1000, solver='liblinear')
+log_scaled.fit(X_train_scaled, y_train)
+y_pred_log_scaled = log_scaled.predict(X_test_scaled)
+
+print("\nLogistic Regression (scaled)")
+print("Accuracy:", accuracy_score(y_test, y_pred_log_scaled))
+print(classification_report(y_test, y_pred_log_scaled))
+
+# Logistic Regression (PCA)
+log_pca = LogisticRegression(C=1.0, max_iter=1000, solver='liblinear')
+log_pca.fit(X_train_pca, y_train)
+y_pred_log_pca = log_pca.predict(X_test_pca)
+
+print("\nLogistic Regression (PCA)")
+print("Accuracy:", accuracy_score(y_test, y_pred_log_pca))
+print(classification_report(y_test, y_pred_log_pca))
+
+# Confusion Matrix (best model)
+ConfusionMatrixDisplay.from_estimator(rf, X_test, y_test)
+plt.title("Best Model Confusion Matrix")
+plt.savefig("outputs/best_model_confusion_matrix.png", bbox_inches="tight")
+plt.close()
+
+# KNN performs poorly on unscaled data (~0.80 accuracy) because large-scale features dominate distance calculations. After scaling, performance improves significantly (~0.91). PCA gives nearly identical performance, suggesting dimensionality reduction does not add much benefit here.
+# For the decision tree, training accuracy increases steadily with depth, reaching nearly perfect accuracy at max_depth=None, while test accuracy improves only slightly. This indicates overfitting at higher depths. A moderate depth like 5 provides a good balance between performance and generalization.
+# Random Forest performs best (~0.95 accuracy), likely because it reduces overfitting and captures complex patterns through ensembling.
+# Logistic Regression performs well on scaled data (~0.93), but PCA slightly reduces performance (~0.92), indicating some useful information is lost in dimensionality reduction. This matches expectations from Task 2.
+# Overall, Random Forest is the best-performing model. PCA did not significantly improve results for KNN or Logistic Regression, which aligns with the hypothesis that some information is lost during dimensionality reduction.
+# For a spam filter, accuracy is not the most important metric. False positives(legitimate emails marked as spam) are more costly than false negatives, so minimizing false positives is more important.
+# The best model (Random Forest) makes slightly more false negatives than false positives (spam missed vs legitimate emails blocked), which is preferable since it avoids incorrectly filtering legitimate emails.
