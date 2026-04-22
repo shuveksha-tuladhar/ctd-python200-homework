@@ -3,6 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import requests
 from io import BytesIO
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+# Mini-Project -- Spam or Ham? A Classifier Shootout
+
+# Task 1: Load and Explore
 
 # Load dataset
 
@@ -116,3 +123,52 @@ print(df[features].describe())
 # The dataset has 4,601 emails with a moderate class imbalance (~61% ham, ~39% spam). This means accuracy alone can be misleading, since always predicting “ham” gives ~60%.
 # Boxplots show spam tends to have higher values for all three features. The differences are subtle for word_freq_free and char_freq_!, but more dramatic for capital_run_length_total.
 # Many features are mostly zero, indicating sparse data where most emails don’t contain most words. Feature scales vary widely (small frequencies vs large counts), which matters for scale-sensitive models like logistic regression, KNN, and SVM.
+
+# Task 2: Prepare Your Data
+
+# Train/test split
+X = df.drop(columns=["spam_label"])
+y = df["spam_label"]
+
+# Use stratify to preserve class balance in both sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Feature scaling
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# PCA (fit on training only)
+pca = PCA()
+pca.fit(X_train_scaled)
+
+# Cumulative explained variance
+cum_var = np.cumsum(pca.explained_variance_ratio_)
+
+# Find number of components to reach 90%
+n = np.argmax(cum_var >= 0.90) + 1
+print(f"\nNumber of components for 90% variance: {n}")
+
+# Plot cumulative variance
+plt.figure(figsize=(6, 4))
+plt.plot(cum_var)
+plt.axhline(0.90, linestyle='--')
+plt.xlabel("Number of Components")
+plt.ylabel("Cumulative Explained Variance")
+plt.title("PCA Explained Variance")
+plt.savefig("outputs/pca_explained_variance.png", bbox_inches="tight")
+plt.close()
+
+# Transform data using PCA
+X_train_pca = pca.transform(X_train_scaled)[:, :n]
+X_test_pca = pca.transform(X_test_scaled)[:, :n]
+
+# We split the data into training and testing sets using stratification to preserve the class balance. This ensures both sets reflect the original distribution of spam and ham.
+# We scaled the features using StandardScaler because the dataset contains features with very different magnitudes (small frequencies vs large counts).
+# Scaling is important for models like KNN and logistic regression.
+# PCA was applied after scaling, since it is sensitive to feature magnitude. It was fit only on the training data to avoid data leakage.
+# We selected the number of components that explain at least 90% of the variance, then transformed both training and test sets. We keep both the scaled data and PCA-reduced data for use in different models.
+
+
