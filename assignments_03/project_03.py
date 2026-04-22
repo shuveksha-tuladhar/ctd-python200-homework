@@ -13,6 +13,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, ConfusionMatrixDisplay
 from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import Pipeline
 
 # Mini-Project -- Spam or Ham? A Classifier Shootout
 
@@ -326,3 +327,44 @@ for name, model in models.items():
 # In terms of stability, KNN and Logistic Regression have the lowest standard deviation (~0.009), meaning their performance is very consistent across folds. Random Forest is slightly more variable but still stable given its higher accuracy.
 # The Decision Tree shows the highest variance, which reflects its sensitivity to training data splits and tendency to overfit compared to ensemble methods.
 # Overall, the cross-validation results match the single train/test split ranking: Random Forest is best, followed by Logistic Regression, then Decision Tree and KNN. This confirms that the earlier results were not due to a lucky or unlucky split.
+
+# Task 5: Building a Prediction Pipeline
+
+knn5_pipeline = Pipeline([
+    ("scaler",     StandardScaler()), # name, object pattern
+    ("classifier", KNeighborsClassifier(n_neighbors=5))
+])
+
+knn5_pipeline.fit(X_train, y_train)
+y_pred = knn5_pipeline.predict(X_test)
+
+pca_pipeline = Pipeline([
+    ("scaler",     StandardScaler()),
+    ("pca",        PCA(n_components=...)),  # use your n_components from Task 2
+    ("classifier", LogisticRegression(C=1.0, max_iter=1000, solver='liblinear'))
+])
+
+rf_pipeline = Pipeline([
+    ("classifier", RandomForestClassifier(n_estimators=100, random_state=42))
+])
+
+rf_pipeline.fit(X_train, y_train)
+y_pred_rf = rf_pipeline.predict(X_test)
+
+print("\nRandom Forest Pipeline")
+print(classification_report(y_test, y_pred_rf))
+log_pipeline = Pipeline([
+    ("scaler", StandardScaler()),
+    ("classifier", LogisticRegression(C=1.0, max_iter=1000, solver='liblinear'))
+])
+
+log_pipeline.fit(X_train, y_train)
+y_pred_log = log_pipeline.predict(X_test)
+
+print("\nLogistic Regression Pipeline")
+print(classification_report(y_test, y_pred_log))
+
+# The Random Forest pipeline performs best, achieving ~0.95 accuracy, while the Logistic Regression pipeline achieves ~0.93 accuracy. These results match the earlier manual experiments, confirming that the pipelines reproduce the same performance when preprocessing is correctly applied.
+# The structures differ because Random Forest is a tree-based model and does not require scaling or dimensionality reduction, while Logistic Regression is sensitive to feature scale and therefore includes StandardScaler in the pipeline.
+# Pipelines provide a clean and reliable way to package preprocessing and modeling steps into a single object. This prevents errors such as incorrect preprocessing order or data leakage, and makes models easier to reuse and deploy.
+# In practice, pipelines are essential for production machine learning because they ensure that training and prediction use identical transformations in a controlled and reproducible way.
