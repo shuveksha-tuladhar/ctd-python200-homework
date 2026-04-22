@@ -268,3 +268,38 @@ plt.close()
 # Overall, Random Forest is the best-performing model. PCA did not significantly improve results for KNN or Logistic Regression, which aligns with the hypothesis that some information is lost during dimensionality reduction.
 # For a spam filter, accuracy is not the most important metric. False positives(legitimate emails marked as spam) are more costly than false negatives, so minimizing false positives is more important.
 # The best model (Random Forest) makes slightly more false negatives than false positives (spam missed vs legitimate emails blocked), which is preferable since it avoids incorrectly filtering legitimate emails.
+
+# Feature importances
+feature_names = X.columns
+
+# Decision Tree importances
+tree_importances = tree_final.feature_importances_
+tree_top_idx = tree_importances.argsort()[::-1][:10]
+
+print("\nTop 10 Decision Tree Features:")
+for i in tree_top_idx:
+    print(feature_names[i], tree_importances[i])
+
+# Random Forest importances
+rf_importances = rf.feature_importances_
+rf_top_idx = rf_importances.argsort()[::-1][:10]
+
+print("\nTop 10 Random Forest Features:")
+for i in rf_top_idx:
+    print(feature_names[i], rf_importances[i])
+
+# Plot Random Forest importances
+top_features = [feature_names[i] for i in rf_top_idx]
+top_values = rf_importances[rf_top_idx]
+
+plt.figure(figsize=(8, 5))
+plt.barh(top_features[::-1], top_values[::-1])
+plt.xlabel("Importance")
+plt.title("Top 10 Random Forest Feature Importances")
+plt.savefig("outputs/feature_importances.png", bbox_inches="tight")
+plt.close()
+
+# The Decision Tree and Random Forest both identify similar important features, especially char_freq_$, char_freq_!, word_freq_remove, word_freq_free, and capital run length features.
+# The Decision Tree is heavily influenced by a few dominant features (especially char_freq_$), while the Random Forest spreads importance more evenly across multiple features, including capital_run_length statistics and common words like "your" and "you".
+# Overall, both models align with intuition: spam emails are strongly associated with dollar signs, exclamation marks, removal requests, and words like "free", as well as excessive capitalization.
+# The Random Forest provides a more stable and realistic view of feature importance because it averages across many trees, reducing the risk of overfitting that affects a single Decision Tree.
