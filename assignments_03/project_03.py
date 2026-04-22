@@ -12,6 +12,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, ConfusionMatrixDisplay
+from sklearn.model_selection import cross_val_score
 
 # Mini-Project -- Spam or Ham? A Classifier Shootout
 
@@ -303,3 +304,25 @@ plt.close()
 # The Decision Tree is heavily influenced by a few dominant features (especially char_freq_$), while the Random Forest spreads importance more evenly across multiple features, including capital_run_length statistics and common words like "your" and "you".
 # Overall, both models align with intuition: spam emails are strongly associated with dollar signs, exclamation marks, removal requests, and words like "free", as well as excessive capitalization.
 # The Random Forest provides a more stable and realistic view of feature importance because it averages across many trees, reducing the risk of overfitting that affects a single Decision Tree.
+
+# Task 4: Cross-Validation
+
+models = {
+    "KNN (scaled)": knn_scaled,
+    "Decision Tree": tree_final,
+    "Random Forest": rf,
+    "Logistic Regression (scaled)": log_scaled
+}
+
+print("\nCross Validation Results (cv=5)")
+
+for name, model in models.items():
+    scores = cross_val_score(model, X_train_scaled if "scaled" in name else X_train, y_train, cv=5)
+    print(f"\n{name}")
+    print("Mean Accuracy:", scores.mean())
+    print("Std Dev:", scores.std())
+
+# Cross-validation shows Random Forest performs best overall, with the highest mean accuracy (~0.954). Logistic Regression is the second-best model (~0.924), followed by Decision Tree (~0.907) and KNN (~0.905).
+# In terms of stability, KNN and Logistic Regression have the lowest standard deviation (~0.009), meaning their performance is very consistent across folds. Random Forest is slightly more variable but still stable given its higher accuracy.
+# The Decision Tree shows the highest variance, which reflects its sensitivity to training data splits and tendency to overfit compared to ensemble methods.
+# Overall, the cross-validation results match the single train/test split ranking: Random Forest is best, followed by Logistic Regression, then Decision Tree and KNN. This confirms that the earlier results were not due to a lucky or unlucky split.
