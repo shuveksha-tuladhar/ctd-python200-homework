@@ -120,3 +120,95 @@ for C in C_values:
     
 # As C increases, the total magnitude of the coefficients also increases. This is because a larger C means weaker regularization, allowing the model to fit the training data more closely with larger weights. 
 # Conversely, a smaller C applies stronger regularization, shrinking coefficients toward zero to prevent overfitting.
+
+# --- PCA ---
+# PCA Q1 - Print the shape of X_digits and images. Then create a 1-row subplot showing one example of each digit class (0-9), using cmap='gray_r' with each digit's label as the title.
+
+digits = load_digits()
+X_digits = digits.data    # 1797 images, each flattened to 64 pixel values
+y_digits = digits.target  # digit labels 0-9
+images   = digits.images  # same data shaped as 8x8 images for plotting
+print("X_digits shape:", X_digits.shape)
+print("images shape:", images.shape)
+
+fig, axes = plt.subplots(1, 10, figsize=(12, 3))
+
+for digit in range(10):
+    idx = np.where(y_digits == digit)[0][0]
+    axes[digit].imshow(images[idx], cmap='gray_r')
+    axes[digit].set_title(str(digit))
+    axes[digit].axis('off')
+
+plt.tight_layout()
+plt.savefig("outputs/sample_digits.png")
+plt.close() 
+
+# PCA Q2 - Fit PCA() on X_digits (with no n_components argument) then get the scores with scores = pca.transform(X_digits). Use scores[:, 0] and scores[:, 1] to make a scatter plot, coloring each point by its digit label and adding a colorbar.
+
+pca = PCA()
+scores = pca.fit_transform(X_digits)
+
+scatter = plt.scatter(
+    scores[:, 0],
+    scores[:, 1],
+    c=y_digits,
+    cmap='tab10',
+    s=10
+)
+
+plt.colorbar(scatter, label='Digit')
+plt.title("PCA 2D Projection of Digits")
+
+plt.savefig("outputs/pca_2d_projection.png")
+plt.close()
+
+# Same-digit images tend to form loose clusters in 2D PCA space, but there is still overlap because 2 components cannot fully separate all digit structure.
+
+# PCA Q3 - Using the PCA object you fit in Question 2, plot cumulative explained variance vs. number of components using np.cumsum(pca.explained_variance_ratio_).
+
+explained_variance = np.cumsum(pca.explained_variance_ratio_)
+
+plt.plot(explained_variance)
+plt.xlabel("Number of Components")
+plt.ylabel("Cumulative Explained Variance")
+plt.title("PCA Explained Variance")
+
+plt.savefig("outputs/pca_variance_explained.png")
+plt.close()
+
+# About 20–30 components are typically needed to explain ~80% of the variance in the digits dataset.
+
+# PCA Q4 - Using this function, the PCA object, and the scores from Question 2, reconstruct the first 5 digits in X_digits using reconstruction through principal components n = 2, 5, 15, and 40.
+# Build a grid of subplots where rows correspond to each n value and columns show those 5 digits. Add an "Original" row at the top (use images[i], which is already shaped as (8, 8))
+
+def reconstruct_digit(sample_idx, scores, pca, n_components):
+    reconstruction = pca.mean_.copy()
+    for i in range(n_components):
+        reconstruction += scores[sample_idx, i] * pca.components_[i]
+    return reconstruction.reshape(8, 8)
+
+n_values = [2, 5, 15, 40]
+num_digits = 5
+digit_indices = range(num_digits)
+
+fig, axes = plt.subplots(len(n_values) + 1, num_digits, figsize=(10, 8))
+
+# Original row
+for j, idx in enumerate(digit_indices):
+    axes[0, j].imshow(images[idx], cmap='gray_r')
+    axes[0, j].set_title(f"Original {y_digits[idx]}")
+    axes[0, j].axis('off')
+
+# Reconstructions
+for i, n in enumerate(n_values):
+    for j, idx in enumerate(digit_indices):
+        recon = reconstruct_digit(idx, scores, pca, n)
+        axes[i + 1, j].imshow(recon, cmap='gray_r')
+        axes[i + 1, j].set_title(f"n={n}")
+        axes[i + 1, j].axis('off')
+
+plt.tight_layout()
+plt.savefig("outputs/pca_reconstructions.png")
+plt.close()
+
+# Digits usually become clearly recognizable around 15–20 components. This closely matches where the cumulative variance curve starts to plateau, showing that most structural information is captured early.
