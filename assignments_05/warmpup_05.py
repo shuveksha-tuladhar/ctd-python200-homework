@@ -52,3 +52,17 @@ response = client.chat.completions.create(
 for i, choice in enumerate(response.choices, start=1):
     print(f"Completion {i}:")
     print(choice.message.content)
+    
+# API Question 4 - Set max_tokens=15 and send a prompt that would normally produce a long response (for example, "Explain how neural networks work."). Print the result. 
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "Explain how neural networks work."}],
+    max_tokens=15
+)
+
+print(response.choices[0].message.content)
+
+# Observation:
+# The response is cut off after about 15 tokens, so the explanation is incomplete. This happens because max_tokens limits how much the model is allowed to generate, regardless of whether the answer is finished.
+# In real applications, max_tokens is useful to control cost (fewer tokens = cheaper API usage) and limit response length for UI constraints. This would also prevent overly long or verbose outputs
