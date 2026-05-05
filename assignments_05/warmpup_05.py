@@ -39,3 +39,16 @@ for temp in temperatures:
 # At temperature 0.7, it generated a list of multiple creative suggestions with a conversational tone.
 # At temperature 1.5, it also produced a list, but with slightly more varied and less predictable names.
 # This shows that higher temperatures increase creativity and variation, while lower temperatures are more focused and consistent. For consistent and reproducible output, I would use temperature = 0.
+
+# API Question 3 - Use n=3 with temperature=1.0 to get three different completions in a single API call. Print all three.
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "Give me a one-sentence fun fact about pandas (the animal, not the library)."}],
+    n=3,
+    temperature=1.0
+)
+
+for i, choice in enumerate(response.choices, start=1):
+    print(f"Completion {i}:")
+    print(choice.message.content)
