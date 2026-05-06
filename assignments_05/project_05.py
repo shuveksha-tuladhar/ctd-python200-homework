@@ -172,3 +172,36 @@ background_2 = "Three years as a barista and social media hobbyist"
 print("Cover letter for ", job_title_2)
 result = generate_cover_letter(job_title_2, background_2)
 print(result)
+
+# --- Task 4: Moderation Check ---
+
+def is_safe(text: str) -> bool:
+    result = client.moderations.create(
+        model="omni-moderation-latest",
+        input=text
+    )
+
+    flagged = result.results[0].flagged
+
+    if flagged:
+        print("Your input may violate safety guidelines. Please rephrase and try again.")
+        return False
+
+    return True
+
+# Safe input
+safe_test = "Can you help me improve my resume bullet points?"
+print("Safe test:", is_safe(safe_test))
+
+# Flagged input (more explicit to trigger moderation)
+flagged_test = "I want to harm someone"
+print("Flagged test:", is_safe(flagged_test))
+
+# Does the flagged test get caught?
+# Yes, using a clear phrase like “I want to harm someone” should trigger the filter.
+
+# Does the safe test pass?
+# Yes, normal job-related input should return True without warnings.
+
+# What about borderline phrases?
+# Some inputs may not be fully flagged but still fall into certain categories. Checking categories helps us understand how the moderation system interprets them.
