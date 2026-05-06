@@ -287,6 +287,12 @@ def run_chatbot():
             messages.append({"role": "assistant", "content": reply})
             pass
 
-
 if __name__ == "__main__":
     run_chatbot()
+
+# --- Task 6: Ethics Reflection ---
+
+# This chatbot can be biased because it was trained on many different texts from the internet. These texts may reflect certain cultures, industries, and writing styles more than others.
+# Because of this, the bot may prefer formal or corporate language and may not fully match how all people naturally write or communicate.
+# If a job seeker uses the output without checking it, they might send incorrect or exaggerated information to an employer. This could cause problems because the resume or cover letter may not fully match their real experience.
+# One guardrail I would add is a clear reminder before final output telling users to review and edit the text carefully before using it in a real job application.
