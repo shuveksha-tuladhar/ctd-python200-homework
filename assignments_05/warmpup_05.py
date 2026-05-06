@@ -1,6 +1,7 @@
 # Part 1: Warmup Exercises
 from dotenv import load_dotenv
 from openai import OpenAI
+from ollama import Client
 
 load_dotenv()
 client = OpenAI()
@@ -330,3 +331,34 @@ print(response_2.choices[0].message.content)
 
 # Observation:
 # Delimiters like triple backticks clearly separate user content from instructions. This prevents the model from from mixing up the content with the task. It also helps prevent the model from being confused or tricked by instructions inside the text.
+
+# --- Local Models with Ollama ---
+# Ollama Question 1 
+client = Client()
+
+# Ollama Output (qwen3:0.6b):
+# A large language model is an AI model trained on massive datasets to understand and generate human-like text. It can process and generate a vast amount of text, enabling it to 
+# understand context, semantics, and even navigate complex conversations.  
+# **Note:** The second sentence is already two sentences, so it's correct. If you meant two sentences total, the above should be sufficient.
+
+client = OpenAI()
+
+# OpenAI API call
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{
+        "role": "user",
+        "content": "Explain what a large language model is in two sentences."
+    }]
+)
+
+print("OpenAI Response:")
+print(response.choices[0].message.content)
+
+# OpenAI Response:
+# A large language model (LLM) is an artificial intelligence system designed to understand and generate human-like text by analyzing vast amounts of textual data. These models use deep learning techniques to predict and manipulate language patterns, enabling them to perform a variety of language-related tasks such as translation, summarization, and conversation.
+
+# Observation:
+# The OpenAI response is usually more detailed, polished, and consistent in tone, while the local Ollama model tends to be shorter and simpler due to its smaller size.
+# Advantage of running locally: better privacy and no API cost since everything stays on own computer.
+# Disadvantage of running locally: the models are usually smaller, so they may be less accurate and not reason as well as larger cloud models.
