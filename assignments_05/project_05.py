@@ -205,3 +205,88 @@ print("Flagged test:", is_safe(flagged_test))
 
 # What about borderline phrases?
 # Some inputs may not be fully flagged but still fall into certain categories. Checking categories helps us understand how the moderation system interprets them.
+
+# --- Task 5: The Chatbot Loop ---
+
+def run_chatbot():
+    # 1. Initialize conversation history with your system prompt
+    messages = [
+        {"role": "system", "content": system_prompt}
+    ]
+
+    print("=" * 50)
+    print("Job Application Helper")
+    print("=" * 50)
+    print("I can help you with:")
+    print("  1. Rewriting resume bullet points")
+    print("  2. Drafting a cover letter opening")
+    print("  3. Any other questions about your application")
+    print("\nType 'quit' at any time to exit.\n")
+
+    while True:
+        user_input = input("You: ").strip()
+
+        # 2. Handle exit
+        if user_input.lower() in {"quit", "exit"}:
+            print("\nJob Application Helper: Good luck with your applications!")
+            break
+
+        # 3. Skip empty input
+        if not user_input:
+            continue
+
+        # 4. Run moderation check 
+        if not is_safe(user_input):
+            continue  # is_safe() already printed the warning message
+
+        # 5. CResume bullet rewriting
+        if "bullet" in user_input.lower() or "resume" in user_input.lower():
+            print("\nJob Application Helper: Paste your bullet points below, one per line.")
+            print("When you're done, type 'DONE' on its own line.\n")
+            raw_bullets = []
+            while True:
+                line = input().strip()
+                if line.upper() == "DONE":
+                    break
+                if line:
+                    raw_bullets.append(line)
+                    
+            results = rewrite_bullets(raw_bullets)
+
+            print("\nRewritten Bullet Points:\n")
+            for item in results:
+                print(f"Original: {item['original']}")
+                print(f"Improved: {item['improved']}")
+                print("-" * 40)
+
+            print("\nRemember to review and edit these before using them.\n")
+
+        # 6. Cover letter generation
+        elif "cover letter" in user_input.lower():
+            job_title = input("Job Application Helper: What is the job title? ").strip()
+            background = input("Job Application Helper: Briefly describe your background: ").strip()
+            
+            result = generate_cover_letter(job_title, background)
+
+            print("\nCover Letter Opening:\n")
+            print(result)
+            print("\nRemember to review and edit this before submitting.\n")
+
+        # 7. Regular conversation
+        else:
+             # Add user message
+            messages.append({"role": "user", "content": user_input})
+
+            # Get response
+            reply = get_completion(messages)
+
+            # Print response
+            print(f"\nJob Application Helper: {reply}\n")
+
+            # Add assistant response
+            messages.append({"role": "assistant", "content": reply})
+            pass
+
+
+if __name__ == "__main__":
+    run_chatbot()
