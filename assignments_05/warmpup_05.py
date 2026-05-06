@@ -66,3 +66,61 @@ print(response.choices[0].message.content)
 # Observation:
 # The response is cut off after about 15 tokens, so the explanation is incomplete. This happens because max_tokens limits how much the model is allowed to generate, regardless of whether the answer is finished.
 # In real applications, max_tokens is useful to control cost (fewer tokens = cheaper API usage) and limit response length for UI constraints. This would also prevent overly long or verbose outputs
+
+# --- System Messages and Personas ---
+# System Question 1 - Use a system message to give the model a personality, then ask it a question. Print the response.
+messages_a = [
+    {"role": "system", "content": "You are a patient, encouraging Python tutor. You always explain things simply and end with a word of encouragement."},
+    {"role": "user", "content": "I don't understand what a list comprehension is."}
+]
+
+response_a = client.chat.completions.create(model='gpt-4o-mini', 
+                                          messages=messages_a)
+
+
+print("Tutor personality:")
+print(response_a.choices[0].message.content)
+print("-" * 40)
+
+messages_b = [
+    {
+        "role": "system",
+        "content": "You are a strict senior software engineer. You are concise, direct, and do not add encouragement or fluff."
+    },
+    {
+        "role": "user",
+        "content": "I don't understand what a list comprehension is."
+    }
+]
+
+response_b = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=messages_b
+)
+
+print("Strict engineer personality:")
+print(response_b.choices[0].message.content)
+
+# Observation:
+# Changing the system message completely changes the tone, structure, and style of the answer. The first response is friendly and encouraging with simple explanations, while the second is concise, technical, and removes emotional support. This shows that system messages strongly control the model's "personality" and behavior.
+
+
+# System Question 2 - The completions API is stateless — it has no memory of previous calls. The way to give a model context is to pass the conversation history yourself as a list of messages. Build the following conversation manually (no loop, no user input — just construct the list) and send it in a single API call:
+
+messages = [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "My name is Jordan and I'm learning Python."},
+    {"role": "assistant", "content": "Nice to meet you, Jordan! Python is a great choice. What would you like to work on?"},
+    {"role": "user", "content": "Can you remind me what my name is?"}
+]
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=messages
+)
+
+print(response.choices[0].message.content)
+
+# Observation:
+# The model knows Jordan's name because the full conversation history was included in the API request. Even though the model is stateless (it does not remember past calls), it can "appear" to have memory when you resend previous messages as context.
+
