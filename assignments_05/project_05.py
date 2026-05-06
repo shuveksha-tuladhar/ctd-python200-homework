@@ -115,3 +115,60 @@ rewrite_bullets(bullets)
 
 # Are the improvements meaningful?
 # Yes, the improved bullets are stronger. They use better action verbs, add more detail, and explain the impact of the work. They are not just rearranged, they are clearer and more professional.
+
+# --- Task 3: Cover Letter Generator ---
+
+def generate_cover_letter(job_title: str, background: str) -> str:
+    prompt = f"""
+    You write strong cover letter opening paragraphs for career changers.
+    The paragraph should be 3-5 sentences: confident, specific, and free of clichés.
+
+    Here are two examples of the style and tone you should match:
+
+    Example 1:
+    Role: Data Analyst at a healthcare nonprofit
+    Background: Seven years as a registered nurse, recently completed a data analytics bootcamp.
+    Opening: After seven years as a registered nurse, I've spent my career making decisions
+    under pressure using incomplete information — which turns out to be excellent training for
+    data analysis. I recently completed a data analytics program where I built dashboards
+    tracking patient outcomes across departments. I'm excited to bring that combination of
+    clinical context and technical skill to [Company]'s mission-driven work.
+
+    Example 2:
+    Role: Junior Software Engineer at a fintech startup
+    Background: Ten years in retail banking operations, self-taught Python developer for two years.
+    Opening: I spent a decade on the operations side of banking, watching technology decisions
+    get made by people who had never processed a wire transfer or resolved a failed ACH batch.
+    That frustration turned into curiosity, and two years of self-teaching Python later, I'm
+    ready to be on the other side of those decisions. I'm applying to [Company] because your
+    work on payment infrastructure is exactly where my domain expertise and new technical skills
+    intersect.
+
+    Now write an opening paragraph for this person:
+
+    Role: {job_title}
+    Background: {background}
+    Opening:
+    """
+
+    messages = [{"role": "user", "content": prompt}]
+    
+    response = get_completion(messages)
+    return response.strip()
+
+job_title = "Junior Data Engineer"
+background = "Five years of experience as a middle school math teacher; recently completed a Python course and built data pipelines using Prefect and Pandas."
+
+result = generate_cover_letter(job_title, background)
+print("Cover letter for ", job_title)
+print(result)
+print("-" * 40)
+
+# I chose these examples because they show strong, specific openings from people changing careers. They clearly connect past experience to new skills and avoid generic language.
+# The few-shot examples help guide the model’s tone, structure, and level of detail, so the output is more consistent and tailored instead of vague or repetitive.
+
+job_title_2 = "Marketing Coordinator"
+background_2 = "Three years as a barista and social media hobbyist"
+print("Cover letter for ", job_title_2)
+result = generate_cover_letter(job_title_2, background_2)
+print(result)
