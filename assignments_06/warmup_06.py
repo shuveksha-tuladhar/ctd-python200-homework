@@ -52,3 +52,98 @@ steps = [
     "Generate a response from the LLM"      # The model creates a final answer using the provided context.
 ]
 
+# --- Keyword RAG ---
+
+def simple_keyword_retrieval(query, documents, verbose=True):
+    """Keyword retrieval using token overlap scoring."""
+    stopwords = {
+        "a", "an", "the", "and", "or", "in", "on", "of", "for", "to", "is",
+        "are", "was", "were", "by", "with", "at", "from", "that", "this",
+        "as", "be", "it", "its", "their", "they", "we", "you", "our"
+    }
+    translator = str.maketrans("", "", string.punctuation)
+
+    query_words = {
+        w.translate(translator)
+        for w in query.lower().split()
+        if w not in stopwords
+    }
+    if verbose:
+        print(f"\nQuery tokens (filtered): {sorted(query_words)}")
+
+    scores = []
+    for name, content in documents.items():
+        content_words = {
+            w.translate(translator)
+            for w in content.lower().split()
+            if w not in stopwords
+        }
+        overlap = query_words & content_words
+        score = len(overlap)
+        scores.append((score, name, content))
+        if verbose:
+            print(f"[{name}] overlap={score} -> {sorted(overlap)}")
+
+    scores.sort(reverse=True)
+    best = next(((name, content) for score, name, content in scores if score > 0), None)
+    if best:
+        if verbose:
+            print(f"\nSelected best match: {best[0]}")
+        return [best]
+    else:
+        if verbose:
+            print("\nNo overlapping keywords found.")
+        return [("None found", "No relevant content.")]
+    
+# Keyword Q1 
+print("\n--- Keyword Q1 ---")
+
+query = "What are your hours on the weekend?"
+
+documents = {
+    "menu.txt": "We serve espresso, lattes, cappuccinos, and cold brew. Pastries include croissants and muffins baked fresh daily. Oat milk and almond milk are available.",
+    "hours.txt": "We are open Monday through Friday from 7am to 7pm. On weekends we open at 8am and close at 5pm. We are closed on Thanksgiving and Christmas Day.",
+    "hiring.txt": "We are currently hiring baristas and shift supervisors. Send your resume to jobs@groundworkcoffee.com.",
+    "loyalty.txt": "Join our loyalty program to earn one point per dollar spent. Redeem 100 points for a free drink of your choice.",
+}
+
+selected_doc = simple_keyword_retrieval(query, documents, verbose=True)
+print("Selected document:", selected_doc)
+
+# Result comment:
+# The selected document was "loyalty.txt". Keyword retrieval got this wrong. The correct answer should have been "hours.txt", but keyword retrieval only matches exact words or tokens.
+# The query included the word "your", and "loyalty.txt" contains the phrase "your choice", which created a stronger keyword match than the actual  hours document.
+# Also, the query used the word "weekend" while the document used "weekends", so the simple keyword matcher may not have recognized them as the same word.
+# This shows a limitation of basic keyword retrieval because it does not truly understand meaning or context.
+
+# Keyword Q2
+print("\n--- Keyword Q2 ---")
+
+query = "Do you have anything without caffeine?"
+results = simple_keyword_retrieval(query, documents, verbose=True)
+
+print("Selected document:", results)
+
+# The selected document was "None found".
+# Keyword retrieval got this wrong because none of the documents contain the exact words "caffeine" or "without".
+# This shows a limitation of keyword-based RAG because it only matches exact words and cannot understand concepts like "caffeine-free" or "decaf".
+# Keyword RAG is not able to infer meaning, so it misses relevant documents even when they are clearly related.
+# A semantic or embedding-based retrieval system would perform better because it can match based on meaning instead of exact keyword overlap.
+
+# Keyword Q3
+print("\n--- Keyword Q3 ---")
+
+query = "How do I sign up for rewards?"
+results3 = simple_keyword_retrieval(query, documents, verbose=True)
+
+print("Selected document:", results3)
+
+# Prediction (before running):
+# I predict the selected document will be "loyalty.txt" because the query "How do I sign up for rewards?" is related to rewards, and loyalty.txt contains information about a rewards/points system.
+
+# After running:
+# The actual result was "None found".
+# My prediction was incorrect.
+# Keyword RAG only matches exact tokens, so it failed because none of the documents contain words like "rewards", "sign", or "up".
+# Even though "loyalty.txt" is the correct semantic match, keyword retrieval cannot understand that "rewards" is related to a "loyalty program".
+# This shows a limitation of keyword-based retrieval, where meaning is ignored and only exact word overlap is used for matching.
