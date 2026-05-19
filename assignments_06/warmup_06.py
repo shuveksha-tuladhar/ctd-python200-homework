@@ -1,6 +1,14 @@
 from dotenv import load_dotenv
 import os
 import string
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.llms.openai import OpenAI
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.core.settings import Settings
+from llama_index.core.evaluation import (
+    FaithfulnessEvaluator,
+    RelevancyEvaluator,
+)
 
 if load_dotenv():
     print("API key loaded successfully.")
@@ -170,3 +178,181 @@ print("Selected document:", results3)
 # | Can it handle synonyms?    | No                                | Yes |
 # | Storage format             | Plain text dictionary             | Vector embeddings in a vector database |
 # | Relevance score            | Number of overlapping keywords    | Cosine similarity between vectors |
+
+# --- LlamaIndex  ---
+# LlamaIndex Q1
+
+print("\n--- LlamaIndex Q1 ---")
+
+# Configure models
+Settings.llm = OpenAI(model="gpt-4o-mini")
+Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+
+# Load BrightLeaf PDFs
+documents = SimpleDirectoryReader(
+    "./resources/brightleafs_pdfs"
+).load_data()
+
+# Build in-memory vector index
+index = VectorStoreIndex.from_documents(documents)
+
+# Create query engine
+query_engine = index.as_query_engine(similarity_top_k=3)
+
+questions = [
+    "What employee benefits does BrightLeaf offer?",
+    "What are BrightLeaf's security policies?",
+]
+
+for q in questions:
+    print("\n" + "=" * 60)
+    print("QUESTION:")
+    print(q)
+
+    response = query_engine.query(q)
+
+    print("\nANSWER:")
+    print(response)
+
+    print("\nRETRIEVED CHUNKS:")
+    for i, node in enumerate(response.source_nodes, start=1):
+        print(f"\nChunk {i}")
+        print("Similarity score:", round(node.score, 4))
+        print("Text preview:")
+        print(node.text[:150])
+
+# LlamaIndex Q1: observations
+
+# Query 1: What employee benefits does BrightLeaf offer?
+# The retrieved chunks do not look relevant to the question. Most of the text contains random symbols and PDF formatting instead of readable information. This suggests the PDFs were not processed correctly before indexing.
+# The model response sounds unsure and hesitant. It says the information is "not detailed in the provided information" and suggests checking the original document. The tone is not confident or specific.
+# Something unexpected was retrieved. The chunks included raw PDF data such as "%PDF-1.4" and unreadable binary-like text instead of actual employee benefit details.
+
+# Query 2: What are BrightLeaf's security policies?
+# The retrieved chunks also do not look relevant to the question. The chunks mostly contain random characters and PDF metadata instead of readable security policy information.
+# The model response again sounds uncertain and cautious. It says the details are "not provided in the available information" and recommends referring to the original document.
+# The answer does not sound confident. An unexpected issue was that raw PDF content was retrieved instead of meaningful text about security policies.
+
+# LlamaIndex Q2
+print("\n--- LlamaIndex Q2 --- ")
+query = "What employee benefits does BrightLeaf offer?"
+
+print("TOP K = 1")
+
+query_engine_1 = index.as_query_engine(similarity_top_k=1)
+response_1 = query_engine_1.query(query)
+
+print("\nANSWER:")
+print(response_1)
+
+print("\nSOURCE NODES:")
+for node in response_1.source_nodes:
+    print("Score:", round(node.score, 4))
+    print(node.text[:150])
+
+print("TOP K = 5")
+
+query_engine_5 = index.as_query_engine(similarity_top_k=5)
+response_5 = query_engine_5.query(query)
+
+print("\nANSWER:")
+print(response_5)
+
+print("\nSOURCE NODES:")
+for node in response_5.source_nodes:
+    print("Score:", round(node.score, 4))
+    print(node.text[:150])
+    
+# LlamaIndex Q2: observations
+# The response stayed the same for both TOP K = 1 and TOP K = 5.
+# In both cases, the model said that employee benefits are not detailed in the provided information.
+
+# With TOP K = 1, only one chunk was retrieved and it already contained low-quality, unreadable PDF-like text, so the model had no useful context.
+# With TOP K = 5, more chunks were retrieved, but they were also corrupted or irrelevant (raw PDF encoding and symbols), so the answer did not improve.
+
+# This shows that increasing top_k does not always improve results.If the retrieved chunks are low quality, adding more context only adds more noise.
+# In this case, the main problem is not retrieval size but poor document parsing, which caused embeddings to be built on unreadable text instead of real content.
+
+# --- LlamaIndex Q3 ---
+
+print("\n--- LlamaIndex Q3 --- ")
+challenging_query = "What is BrightLeaf's plan for international expansion?"
+
+print("\n" + "=" * 60)
+print("CHALLENGING QUERY")
+
+response = query_engine.query(challenging_query)
+
+print("\nANSWER:")
+print(response)
+
+print("\nRETRIEVED CHUNKS:")
+for node in response.source_nodes:
+    print("\nScore:", round(node.score, 4))
+    print(node.text[:200])
+
+# LlamaIndex Q3: observations
+# I expected this query to be difficult because BrightLeaf’s international expansion plans are likely not included in the provided documents.
+# The actual result confirms this expectation. The model responded that the information is not available and did not attempt to guess or hallucinate an answer.
+# The retrieved chunks are again low-quality and mostly unreadable symbol-like text, which suggests the embeddings were built on corrupted PDF content.
+# Because of this, retrieval failed to bring back any meaningful context related to international expansion.
+# To improve the system, the PDF parsing step must be fixed so that clean text is extracted before indexing. Otherwise, even semantic search cannot work properly.
+
+# LlamaIndex Q4
+print("\n--- LlamaIndex Q4 ---")
+
+judge_llm = OpenAI(model="gpt-4o-mini")
+
+faithfulness_evaluator = FaithfulnessEvaluator(llm=judge_llm)
+relevancy_evaluator = RelevancyEvaluator(llm=judge_llm)
+
+# Good query
+q1 = "What employee benefits does BrightLeaf offer?"
+
+response1 = query_engine.query(q1)
+
+faithfulness_result1 = faithfulness_evaluator.evaluate_response(
+    query=q1,
+    response=response1,
+)
+
+relevancy_result1 = relevancy_evaluator.evaluate_response(
+    query=q1,
+    response=response1,
+)
+
+print("\n" + "=" * 60)
+print("GOOD QUERY EVALUATION")
+
+print("Faithfulness score:", faithfulness_result1.score)
+print("Relevancy score:", relevancy_result1.score)
+
+# Lower-quality query
+q2 = "What is BrightLeaf's cryptocurrency investment strategy?"
+
+response2 = query_engine.query(q2)
+
+faithfulness_result2 = faithfulness_evaluator.evaluate_response(
+    query=q2,
+    response=response2,
+)
+
+relevancy_result2 = relevancy_evaluator.evaluate_response(
+    query=q2,
+    response=response2,
+)
+
+print("\n" + "=" * 60)
+print("LOW-QUALITY QUERY EVALUATION")
+
+print("Faithfulness score:", faithfulness_result2.score)
+print("Relevancy score:", relevancy_result2.score)
+
+
+#LlamaIndex Q4: observations
+# Faithfulness = 1.0 means the answer is fully supported by the retrieved context.
+# Faithfulness = 0.0 means the answer is not supported and may be hallucinated.
+
+# Relevancy checks if the answer addresses the question, while faithfulness checks if it is grounded in the documents.
+# Here, the good query has both scores = 1.0, so it is correct and well supported. The low-quality query has relevancy = 1.0 but faithfulness = 0.0, meaning it answers the question but is not grounded in the context.
+# LLM-as-a-judge uses another model to evaluate answers because RAG outputs are hard to score with simple exact-match rules.
