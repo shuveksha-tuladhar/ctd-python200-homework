@@ -147,3 +147,26 @@ print("Selected document:", results3)
 # Keyword RAG only matches exact tokens, so it failed because none of the documents contain words like "rewards", "sign", or "up".
 # Even though "loyalty.txt" is the correct semantic match, keyword retrieval cannot understand that "rewards" is related to a "loyalty program".
 # This shows a limitation of keyword-based retrieval, where meaning is ignored and only exact word overlap is used for matching.
+
+# --- Semantic RAG Concepts ---
+# Semantic Q1
+# What is a vector embedding?
+# A vector embedding is a way to turn text into a list of numbers that represents its meaning.
+# Texts with similar meanings end up with similar number patterns, even if the words are different.
+
+# Cosine similarity question:
+# The chunk with similarity 0.85 is more relevant than 0.30.
+# This number tells how close two embeddings are in meaning. A higher score means the texts are more similar in meaning.
+
+# Why semantic search works without exact words:
+# Semantic search works because it compares meaning instead of exact words.
+# Even if the query and chunk use different words, embeddings can still place them close together in vector space if they mean similar things.
+
+# Semantic Q2
+# | Feature                    | Keyword RAG                       | Semantic RAG |
+# |----------------------------|-----------------------------------|--------------|
+# | What is compared?          | Exact word overlap                | Meaning of text (embeddings) |
+# | What is retrieved?         | Full document                     | Relevant chunks of documents |
+# | Can it handle synonyms?    | No                                | Yes |
+# | Storage format             | Plain text dictionary             | Vector embeddings in a vector database |
+# | Relevance score            | Number of overlapping keywords    | Cosine similarity between vectors |
