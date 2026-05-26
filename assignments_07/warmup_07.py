@@ -6,6 +6,8 @@ from datetime import datetime
 import json
 import os
 import pandas as pd
+from smolagents import ToolCallingAgent, CodeAgent, tool
+from smolagents.models import OpenAIServerModel
 
 if load_dotenv():
     print('Successfully loaded environment variables from .env')
@@ -397,3 +399,124 @@ print(result)
 # The assistant reads these results before continuing.
 
 print(json.dumps(messages, indent=2, default=str))
+
+# --- smolagents ---
+# --- Q7 ---
+
+@tool
+def compute_correlation(col1: str, col2: str):
+    """
+    Compute the Pearson correlation between two columns
+    in the loaded DataFrame.
+    """
+
+    return csv_manager.compute_correlation(col1, col2)
+
+
+print(compute_correlation.description)
+
+# Comparison:
+# In Q4, I had to manually write the JSON schema with:
+# - name
+# - description
+# - parameter types
+# - required fields
+
+# smolagents generates this information automatically from the function name, type hints, and docstring.
+
+# To generate a good tool description, smolagents needs:
+# - a clear function name
+# - type annotations
+# - a good docstring that explains what the tool does
+
+def load_csv(file_path: str):
+    """
+    Load a CSV file into a pandas DataFrame.
+    """
+
+    return csv_manager.load_csv(file_path)
+
+@tool
+def preview_data(n: int = 5):
+    """
+    Preview the first rows of the loaded dataset.
+    """
+
+    return csv_manager.preview_data(n)
+
+# Shared Model
+model = OpenAIServerModel(
+    model_id="gpt-4.1-mini"
+)
+
+# Shared TOOLS list
+TOOLS = [
+    load_csv,
+    preview_data,
+    compute_correlation
+]
+
+# --- Q8 ---
+
+tool_agent = ToolCallingAgent(
+    tools=TOOLS,
+    model=model
+)
+
+code_agent = CodeAgent(
+    tools=TOOLS,
+    model=model
+)
+
+prompt = """
+Load bike_commute.csv.
+Plot avg_heart_rate vs duration_min
+as a scatter plot with green dots.
+"""
+
+response_tool = tool_agent.run(prompt)
+
+response_code = code_agent.run(
+    prompt,
+    additional_args={"csv_manager": csv_manager}
+)
+
+print("ToolCallingAgent Response:")
+print(response_tool)
+
+print("\nCodeAgent Response:")
+print(response_code)
+
+
+# Analysis:
+# The ToolCallingAgent mainly uses predefined tools. It can load data and preview it, but it usually cannot generate custom plotting code unless a plotting tool exists.
+# The ToolCallingAgent probably did not change the dot color to green because no plotting tool with color control was provided.
+# The CodeAgent can write and execute Python code directly. It can create the scatter plot and customize details like green dots.
+
+# This shows that ToolCallingAgents are better when:
+# - tasks are predictable
+# - actions are limited and controlled
+# - safety and reliability are important
+
+# CodeAgents are better when:
+# - tasks are flexible
+# - custom analysis or plotting is needed
+# - the agent must combine many operations dynamically
+
+# --- Q9 ---
+# A ToolCallingAgent is better for tasks with a small, well-defined set of actions.
+# A customer-support chatbot that can:
+# - check order status
+# - cancel orders
+# - issue refunds
+
+# This works well because the allowed actions are limited, structured, and predictable.
+# A tool-based approach is safer because the agent canonly use approved tools.
+
+# One important risk of a CodeAgent is that it generates and runs Python code dynamically.
+# Bad or incorrect code could:
+# - delete files
+# - expose data
+# - crash the program
+# - use too much memory or CPU
+# This risk does not apply as strongly to ToolCallingAgents because they can only call predefined tools instead of executing arbitrary code.
