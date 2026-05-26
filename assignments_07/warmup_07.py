@@ -5,6 +5,7 @@ from openai import OpenAI
 from datetime import datetime
 import json
 import os
+import pandas as pd
 
 if load_dotenv():
     print('Successfully loaded environment variables from .env')
@@ -185,3 +186,214 @@ response_b = run_agent("What is the boiling point of water in plain English?")
 print("Response B:", response_b)
 
 # No tool was needed here. The model already knows that water boils at about 100 degrees Celsius (212 degrees Fahrenheit), so it answered directly without calling a tool.
+
+# --- Multi-Tool Agent ---
+# --- Q4 ---
+class CsvManager:
+
+    def __init__(self):
+        self.df = None
+
+    def load_csv(self, file_path: str):
+        """
+        Load a CSV file into a pandas DataFrame.
+        """
+        try:
+            self.df = pd.read_csv(file_path)
+
+            return {
+                "status": "success",
+                "columns": list(self.df.columns),
+                "rows": len(self.df)
+            }
+
+        except Exception as e:
+            return {"error": str(e)}
+
+    def preview_data(self, n: int = 5):
+        """
+        Preview the first n rows of the DataFrame.
+        """
+        if self.df is None:
+            return {"error": "No CSV loaded."}
+
+        return self.df.head(n).to_dict(orient="records")
+
+    def compute_correlation(self, col1: str, col2: str):
+        """
+        Compute the Pearson correlation between two columns in the loaded DataFrame.
+        Returns the correlation coefficient and p-value.
+        """
+
+        if self.df is None:
+            return {"error": "No CSV loaded."}
+
+        if col1 not in self.df.columns:
+            return {"error": f"Column '{col1}' not found."}
+
+        if col2 not in self.df.columns:
+            return {"error": f"Column '{col2}' not found."}
+
+        try:
+            r, p = pearsonr(self.df[col1], self.df[col2])
+
+            return {
+                "col1": col1,
+                "col2": col2,
+                "pearson_r": round(float(r), 4),
+                "p_value": round(float(p), 4)
+            }
+
+        except Exception as e:
+            return {"error": str(e)}
+
+
+csv_manager = CsvManager()
+
+tools_schema = [
+    {
+        "type": "function",
+        "function": {
+            "name": "load_csv",
+            "description": "Load a CSV file into a pandas DataFrame.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "Path to the CSV file"
+                    }
+                },
+                "required": ["file_path"]
+            }
+        }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "preview_data",
+            "description": "Preview the first n rows of the DataFrame.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "n": {
+                        "type": "integer",
+                        "description": "Number of rows to preview"
+                    }
+                }
+            }
+        }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "compute_correlation",
+            "description": "Compute the Pearson correlation between two columns.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "col1": {
+                        "type": "string",
+                        "description": "First column name"
+                    },
+                    "col2": {
+                        "type": "string",
+                        "description": "Second column name"
+                    }
+                },
+                "required": ["col1", "col2"]
+            }
+        }
+    }
+]
+
+# Tool Dispatcher
+node_tools = {
+    "load_csv": csv_manager.load_csv,
+    "preview_data": csv_manager.preview_data,
+    "compute_correlation": csv_manager.compute_correlation
+}
+
+# System Prompt
+SYSTEM_PROMPT = """
+You are a CSV data assistant.
+
+You can:
+- load CSV files
+- preview datasets
+- compute correlations between columns
+
+Use tools whenever needed.
+"""
+
+# ReAct Agent Loop
+
+def run_agent_cycle(messages, user_input, max_rounds=5):
+
+    messages.append({
+        "role": "user",
+        "content": user_input
+    })
+
+    for i in range(max_rounds):
+
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=messages,
+            tools=tools_schema
+        )
+
+        message = response.choices[0].message
+
+        messages.append(message)
+
+        # If no tool call, return final answer
+        if not message.tool_calls:
+            return message.content
+
+        # Handle tool calls
+        for tool_call in message.tool_calls:
+
+            tool_name = tool_call.function.name
+            tool_args = json.loads(tool_call.function.arguments)
+
+            tool_function = node_tools[tool_name]
+
+            tool_result = tool_function(**tool_args)
+
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": json.dumps(tool_result)
+            })
+
+    return "Tool round limit reached."
+
+# --- Q5 ---
+
+messages = [
+    {
+        "role": "system",
+        "content": SYSTEM_PROMPT
+    }
+]
+
+result = run_agent_cycle(
+    messages,
+    "Load bike_commute.csv and compute the correlation between avg_traffic_density and avg_speed_kmh."
+)
+
+print(result)
+
+# --- Q6 ---
+
+# Role explanations:
+# system: Gives the agent its instructions and behavior rules.
+# user: Contains the user's request or question.
+# assistant: Contains the model's reasoning, responses, and tool-call decisions.
+# tool: Contains the output returned by a tool function.
+# The assistant reads these results before continuing.
+
+print(json.dumps(messages, indent=2, default=str))
