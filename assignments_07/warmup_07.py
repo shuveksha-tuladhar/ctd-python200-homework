@@ -3,8 +3,8 @@
 from dotenv import load_dotenv
 from openai import OpenAI
 from datetime import datetime
+from scipy.stats import pearsonr
 import json
-import os
 import pandas as pd
 from smolagents import ToolCallingAgent, CodeAgent, tool
 from smolagents.models import OpenAIServerModel
@@ -384,7 +384,7 @@ messages = [
 
 result = run_agent_cycle(
     messages,
-    "Load bike_commute.csv and compute the correlation between avg_traffic_density and avg_speed_kmh."
+    "Load resources/bike_commute.csv and compute the correlation between avg_traffic_density and avg_speed_kmh."
 )
 
 print(result)
@@ -402,16 +402,38 @@ print(json.dumps(messages, indent=2, default=str))
 
 # --- smolagents ---
 # --- Q7 ---
+@tool
+def load_csv(file_path: str) -> dict:
+    """
+    Load a CSV file into a pandas DataFrame.
+
+    Args:
+        file_path: Path to the CSV file.
+    """
+    return csv_manager.load_csv(file_path)
+
 
 @tool
-def compute_correlation(col1: str, col2: str):
+def preview_data(n: int = 5) -> list:
     """
-    Compute the Pearson correlation between two columns
-    in the loaded DataFrame.
-    """
+    Preview the first rows of the dataset.
 
+    Args:
+        n: Number of rows to preview.
+    """
+    return csv_manager.preview_data(n)
+
+
+@tool
+def compute_correlation(col1: str, col2: str) -> dict:
+    """
+    Compute Pearson correlation between two columns.
+
+    Args:
+        col1: First column name.
+        col2: Second column name.
+    """
     return csv_manager.compute_correlation(col1, col2)
-
 
 print(compute_correlation.description)
 
@@ -429,32 +451,10 @@ print(compute_correlation.description)
 # - type annotations
 # - a good docstring that explains what the tool does
 
-def load_csv(file_path: str):
-    """
-    Load a CSV file into a pandas DataFrame.
-    """
+# Shared Model and toold
+model = OpenAIServerModel(model_id="gpt-4.1-mini")
 
-    return csv_manager.load_csv(file_path)
-
-@tool
-def preview_data(n: int = 5):
-    """
-    Preview the first rows of the loaded dataset.
-    """
-
-    return csv_manager.preview_data(n)
-
-# Shared Model
-model = OpenAIServerModel(
-    model_id="gpt-4.1-mini"
-)
-
-# Shared TOOLS list
-TOOLS = [
-    load_csv,
-    preview_data,
-    compute_correlation
-]
+TOOLS = [load_csv, preview_data, compute_correlation]
 
 # --- Q8 ---
 
@@ -469,9 +469,9 @@ code_agent = CodeAgent(
 )
 
 prompt = """
-Load bike_commute.csv.
+Load resources/bike_commute.csv.
 Plot avg_heart_rate vs duration_min
-as a scatter plot with green dots.
+as a scatter plot with green dots. Save plots in resources directory
 """
 
 response_tool = tool_agent.run(prompt)
@@ -481,7 +481,7 @@ response_code = code_agent.run(
     additional_args={"csv_manager": csv_manager}
 )
 
-print("ToolCallingAgent Response:")
+print("\nToolCallingAgent Response:\n")
 print(response_tool)
 
 print("\nCodeAgent Response:")
