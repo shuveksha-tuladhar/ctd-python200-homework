@@ -10,7 +10,7 @@ https://youtu.be/OSAQKqSmhIo
 
 **Scenario A – Lightweight Compute**
 
-For Scenario A, we estimated the cost of running a Standard_B1s virtual machine for about 160 hours per month. The total monthly cost was approximately $1.66/month. This scenario showed how affordable cloud computing can be when resources are only used during working hours and shut down when not needed.
+For Scenario A, we estimated the cost of running a Standard_B1s virtual machine for about 160 hours per month. The total monthly cost was approximately $7.59/month. This scenario showed how affordable cloud computing can be when resources are only used during working hours and shut down when not needed.
 
 **Scenario B – Heavy Analytics Workload**
 
