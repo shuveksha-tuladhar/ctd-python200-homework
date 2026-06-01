@@ -2,8 +2,8 @@
 # Run this in Azure Cloud Shell after completing the Cost Analysis above.
 
 # Fill in the hourly rates from your two Pricing Calculator estimates.
-rate_a = 7.59   # Standard_B1s hourly rate (Scenario A)
-rate_b = 657    # Standard_NC6s_v3 hourly rate (Scenario B, VM only)
+rate_a = 0.0474   # Standard_B1s hourly rate (Scenario A)
+rate_b = 0.9    # Standard_NC6s_v3 hourly rate (Scenario B, VM only)
 
 hours_a = 160   # Scenario A: 8h/day, 5 days/week, ~4 weeks
 hours_b = 730   # Scenario B: always on
@@ -20,12 +20,11 @@ if cost_a > 0:
 
 # Output:
 # === Monthly Cost Estimates ===
-# Scenario A (lightweight):       $1214.40
-# Scenario B (GPU VM only):       $479610.00
+# Scenario A (lightweight):       $7.58
+# Scenario B (GPU VM only):       $657.00
 # Scenario B VM costs 1805.8x more than Scenario A
 
-# When I ran the Python script in Azure Cloud Shell, it printed a monthly cost of $1,214.40 for Scenario A and $479,610.00 for Scenario B. 
-# The script also calculated that the GPU VM in Scenario B costs about 394.9 times more than the lightweight VM in Scenario A.
-# The script results were much higher than I expected, especially for Scenario B. 
-# After comparing the output to my Pricing Calculator estimates, I realized there may be a discrepancy because I likely entered the estimate values instead of the actual hourly rates into the script. 
-# Since the script multiplies the rate by the number of hours per month, using monthly values would produce much larger totals. Even with this discrepancy, the exercise showed how significantly costs can increase when using GPU-enabled cloud resources compared to a basic virtual machine.
+# # When I ran the Python script in Azure Cloud Shell, it printed a monthly cost of $7.58 for Scenario A and $657.00 for Scenario B.
+# The script also calculated that the GPU VM in Scenario B costs about 86.7 times more than the lightweight VM in Scenario A.
+# These results matched my expectations after updating the script to use the correct hourly rates from the Azure Pricing Calculator.
+# The biggest insight from this exercise is how quickly costs increase when moving from a small VM to a GPU-enabled VM, even when both are calculated using the same number of hours per month.

@@ -48,3 +48,21 @@ The SSH private key is secret and stays on our machine. The SSH public key is sh
 
 ### Azure Basics Question 4
 Without ``--output table``, the command ``az account show`` displays the information in JSON format, which contains all the details in a structured text format. When we add ``az account show --output table``, the same information is shown in a simpler table format that is easier for people to read.
+
+```json
+{
+  "environmentName": "AzureCloud",
+  "homeTenantId": "0f040ddd-301f-4665-8677-7b21f129d605",
+  "id": "4e07c58c-751e-4765-b40c-632b9ee6fe6e",
+  "isDefault": true,
+  "managedByTenants": [],
+  "name": "CTD Nonprofit Sponsorship",
+  "state": "Enabled",
+  "tenantId": "0f040ddd-301f-4665-8677-7b21f129d605",
+  "user": {
+    "cloudShellID": true,
+    "name": "live.com#tuladhar.shuveksha@gmail.com",
+    "type": "user"
+  }
+}
+```
