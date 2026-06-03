@@ -1,5 +1,8 @@
 # Part 2: Project -- Extract + Load Pipeline
 
+# Video link:
+# https://youtu.be/JYERBYpFU4k
+ 
 from datetime import date
 import json
 import os
