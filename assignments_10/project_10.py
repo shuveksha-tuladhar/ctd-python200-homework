@@ -3,6 +3,8 @@
 # A rule-based approach could classify conditions faster, cheaper, and more consistently. 
 # An LLM may handle edge cases and nuanced judgments better, but for simple temperature and precipitation thresholds, deterministic code would likely be sufficient.
 
+# Video link: https://youtu.be/8nTl39aQ5W8
+
 from datetime import date
 import json
 import os
