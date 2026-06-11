@@ -1,5 +1,8 @@
 # --- Part 1: Warmup ---
 # --- Prefect Orchestration ---
+
+from prefect import task, get_run_logger
+
 # Q1
 
 # A @task represents an individual unit of work in a Prefect workflow. Tasks can be tracked, retried, logged, and monitored independently. 
@@ -7,7 +10,7 @@
 # I would not decorate a helper function that converts Celsius to Fahrenheit with @task because it is a simple in-memory calculation with no I/O, retries, logging, or orchestration needs. It is better kept as a regular Python function.
 
 # Q2
-# @task(retries=3, retry_delay_seconds=30)
+@task(name="call_api", retries=3, retry_delay_seconds=30)
 
 # Q3
 # I would open the failed flow run in the Prefect UI and look at the failed transform task. 
@@ -28,8 +31,6 @@
 # Without overwrite=True, the upload could fail because a blob with the same name already exists.
 
 # Q3
-
-from prefect import task
 
 @task
 def log_loaded_records(records, blob_path):
