@@ -1,5 +1,7 @@
 # Part 2: Project -- Full ETL Pipeline
 
+# video link : https://youtu.be/ZB8G-if9fdw
+
 from dotenv import load_dotenv
 from prefect import flow, task
 from datetime import date
